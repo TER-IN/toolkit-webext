@@ -3,7 +3,9 @@ import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { HomePage } from "@/pages/HomePage";
 import { CssInjectorPage } from "@/pages/CssInjectorPage";
 import { BookmarksPage } from "@/pages/BookmarksPage";
-import { UrlShortenerPage } from "@/pages/UrlShortenerPage";
+import { UrlToolsPage } from "@/pages/UrlToolsPage";
+import { StringToolsPage } from "@/pages/StringToolsPage";
+import { ConvertersPage } from "@/pages/ConvertersPage";
 import { RedirectPage } from "@/pages/RedirectPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -24,7 +26,9 @@ function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/css-injector" element={<CssInjectorPage />} />
                         <Route path="/bookmarks" element={<BookmarksPage />} />
-                        <Route path="/url-shortener" element={<UrlShortenerPage />} />
+                        <Route path="/url-tools" element={<UrlToolsPage />} />
+                        <Route path="/string-tools" element={<StringToolsPage />} />
+                        <Route path="/converters" element={<ConvertersPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Route>
                 </Routes>

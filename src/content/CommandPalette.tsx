@@ -7,6 +7,21 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import browser from "webextension-polyfill";
 import { MSG_TOGGLE_DARK_MODE, MSG_GET_STATUS, MSG_ADD_BOOKMARK, MSG_GET_BOOKMARK_STATUS, MSG_SHORTEN_URL, MSG_GET_SHORT_URL_STATUS } from "@/types";
+import {
+    getStringLength,
+    toUpperCase,
+    toLowerCase,
+    toTitleCase,
+    toSentenceCase,
+    removeAccents,
+    removeExtraSpaces,
+    stringToBinary,
+    binaryToString,
+    base64Encode,
+    base64Decode,
+    urlEncode,
+    urlDecode,
+} from "@/lib/string-tools";
 
 /** Available commands in the palette */
 interface Command {
@@ -25,6 +40,11 @@ export function CommandPalette() {
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [isShortened, setIsShortened] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const resultsRef = useRef<HTMLDivElement>(null);
+
+    // Capture the text selection at the moment the palette opens,
+    // before the input steals focus and de-selects the highlighted text.
+    const capturedSelectionRef = useRef<string>("");
 
     const hostname = window.location.hostname;
 
@@ -61,6 +81,17 @@ export function CommandPalette() {
 
     // ---- Commands ----
     const commands: Command[] = [
+        {
+            id: "open-home",
+            label: "Open TERIN Home",
+            description: "Open the extension dashboard",
+            icon: "🏠",
+            action: async () => {
+                const dashboardUrl = browser.runtime.getURL("index.html");
+                window.open(dashboardUrl, "_blank");
+                setIsOpen(false);
+            },
+        },
         {
             id: "toggle-dark-mode",
             label: "Toggle Dark Mode",
@@ -142,7 +173,166 @@ export function CommandPalette() {
                 setIsOpen(false);
             },
         },
+
+        // ---- String Tools ----
+        ...buildStringToolCommands(),
     ];
+
+    /**
+     * Build the 11 string-tool commands.
+     * Each one uses the captured text selection (snapshotted when palette opened),
+     * transforms it, copies the result to clipboard, and shows an alert.
+     * If no text was selected, it navigates the user to the dedicated tool page.
+     */
+    function buildStringToolCommands(): Command[] {
+        /** Helper: use captured selection, run transform, copy & alert */
+        function makeStringCommand(
+            id: string,
+            label: string,
+            description: string,
+            icon: string,
+            transform: (s: string) => string,
+            /** Hash route for the fallback dashboard page */
+            dashboardRoute: string,
+        ): Command {
+            return {
+                id,
+                label,
+                description,
+                icon,
+                action: async () => {
+                    // Use the selection captured when the palette opened
+                    const selected = capturedSelectionRef.current;
+                    if (!selected) {
+                        // No text was selected → navigate to the dedicated tool page
+                        const dashboardUrl = browser.runtime.getURL(`index.html#${dashboardRoute}`);
+                        window.open(dashboardUrl, "_blank");
+                        setIsOpen(false);
+                        return;
+                    }
+                    try {
+                        const result = transform(selected);
+                        await navigator.clipboard.writeText(result);
+                        // Truncate alert for very long results
+                        const display = result.length > 500
+                            ? result.slice(0, 500) + "… (truncated, full text copied)"
+                            : result;
+                        alert(display);
+                    } catch (err) {
+                        alert(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+                    }
+                    setIsOpen(false);
+                },
+            };
+        }
+
+        return [
+            makeStringCommand(
+                "string-length",
+                "String Length",
+                "Count characters in highlighted text",
+                "📏",
+                (s) => `Length: ${getStringLength(s)}`,
+                "/string-tools",
+            ),
+            makeStringCommand(
+                "to-upper-case",
+                "To Upper Case",
+                "Convert highlighted text to UPPER CASE",
+                "🔠",
+                toUpperCase,
+                "/string-tools",
+            ),
+            makeStringCommand(
+                "to-lower-case",
+                "To Lower Case",
+                "Convert highlighted text to lower case",
+                "🔡",
+                toLowerCase,
+                "/string-tools",
+            ),
+            makeStringCommand(
+                "to-title-case",
+                "To Title Case",
+                "Capitalise Each Word in highlighted text",
+                "🏷️",
+                toTitleCase,
+                "/string-tools",
+            ),
+            makeStringCommand(
+                "to-sentence-case",
+                "To Sentence Case",
+                "Capitalise first letter of each sentence",
+                "💬",
+                toSentenceCase,
+                "/string-tools",
+            ),
+            makeStringCommand(
+                "remove-accents",
+                "Remove Accents",
+                "Strip diacritical marks from highlighted text",
+                "🅰️",
+                removeAccents,
+                "/string-tools",
+            ),
+            makeStringCommand(
+                "remove-spaces",
+                "Remove Extra Spaces",
+                "Collapse multiple spaces in highlighted text",
+                "⬜",
+                removeExtraSpaces,
+                "/string-tools",
+            ),
+            makeStringCommand(
+                "string-to-binary",
+                "String → Binary",
+                "Convert highlighted text to 8-bit binary",
+                "🔢",
+                stringToBinary,
+                "/converters",
+            ),
+            makeStringCommand(
+                "binary-to-string",
+                "Binary → String",
+                "Convert highlighted binary back to text",
+                "🔤",
+                binaryToString,
+                "/converters",
+            ),
+            makeStringCommand(
+                "base64-encode",
+                "Base64 Encode",
+                "Encode highlighted text as Base64",
+                "🔒",
+                base64Encode,
+                "/converters",
+            ),
+            makeStringCommand(
+                "base64-decode",
+                "Base64 Decode",
+                "Decode highlighted Base64 text",
+                "🔓",
+                base64Decode,
+                "/converters",
+            ),
+            makeStringCommand(
+                "url-encode",
+                "URL Encode",
+                "Percent-encode highlighted text",
+                "🔗",
+                urlEncode,
+                "/url-tools",
+            ),
+            makeStringCommand(
+                "url-decode",
+                "URL Decode",
+                "Decode percent-encoded highlighted text",
+                "🌐",
+                urlDecode,
+                "/url-tools",
+            ),
+        ];
+    }
 
     // Filter commands based on search query
     const filtered = query.trim()
@@ -163,6 +353,8 @@ export function CommandPalette() {
                 setIsOpen((prev) => {
                     const next = !prev;
                     if (next) {
+                        // Snapshot the current text selection before the palette steals focus
+                        capturedSelectionRef.current = window.getSelection()?.toString() ?? "";
                         refreshStatus();
                     }
                     return next;
@@ -183,6 +375,16 @@ export function CommandPalette() {
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [isOpen]);
+
+    // Auto-scroll active item into view when navigating with keyboard
+    useEffect(() => {
+        if (!isOpen || !resultsRef.current) return;
+        const container = resultsRef.current;
+        const activeElement = container.children[activeIndex] as HTMLElement | undefined;
+        if (activeElement) {
+            activeElement.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+    }, [activeIndex, isOpen]);
 
     // ---- Keyboard navigation inside the palette ----
     function handleInputKeyDown(e: React.KeyboardEvent) {
@@ -231,7 +433,7 @@ export function CommandPalette() {
                 </div>
 
                 {/* Results */}
-                <div className="terin-results">
+                <div className="terin-results" ref={resultsRef}>
                     {filtered.length === 0 ? (
                         <div
                             style={{

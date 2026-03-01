@@ -10,6 +10,8 @@ import {
     Paintbrush,
     Bookmark,
     Link2,
+    Type,
+    ArrowLeftRight,
     Settings,
     AlertCircle,
     PanelLeftClose,
@@ -29,7 +31,9 @@ const NAV_ITEMS = [
     { to: "/", label: "Home", icon: Home },
     { to: "/css-injector", label: "CSS Overrides", icon: Paintbrush },
     { to: "/bookmarks", label: "Bookmarks", icon: Bookmark },
-    { to: "/url-shortener", label: "URL Shortener", icon: Link2 },
+    { to: "/url-tools", label: "URL Tools", icon: Link2 },
+    { to: "/string-tools", label: "String Tools", icon: Type },
+    { to: "/converters", label: "Converters", icon: ArrowLeftRight },
 ] as const;
 
 export function DashboardLayout() {
@@ -108,7 +112,7 @@ export function DashboardLayout() {
                                     end={to === "/"}
                                     className={({ isActive }) =>
                                         cn(
-                                            "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full",
+                                            "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                             isCollapsed ? "justify-center px-0" : "px-3 gap-3",
                                             isActive
                                                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -142,7 +146,7 @@ export function DashboardLayout() {
                                     to="/settings"
                                     className={({ isActive }) =>
                                         cn(
-                                            "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full relative",
+                                            "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full relative outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                             isCollapsed ? "justify-center px-0" : "px-3 justify-between",
                                             isActive
                                                 ? "bg-sidebar-accent text-sidebar-accent-foreground"

@@ -2,7 +2,7 @@
 // TERIN Toolkit — Home Page
 // ============================================
 
-import { Paintbrush, Link2, FolderOpen } from "lucide-react";
+import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
@@ -14,9 +14,9 @@ const TOOLS = [
         icon: Paintbrush,
     },
     {
-        to: "/url-shortener",
-        title: "URL Shortener",
-        description: "Create short URLs for easy sharing within your team.",
+        to: "/url-tools",
+        title: "URL Tools",
+        description: "Shorten, encode, and decode URLs for your team.",
         icon: Link2,
     },
     {
@@ -24,6 +24,18 @@ const TOOLS = [
         title: "Bookmarks",
         description: "Save, organise, and search your bookmarks with folders.",
         icon: FolderOpen,
+    },
+    {
+        to: "/string-tools",
+        title: "String Tools",
+        description: "Transform, measure, and clean up text — case conversion, accents, spaces.",
+        icon: Type,
+    },
+    {
+        to: "/converters",
+        title: "Converters",
+        description: "Encode & decode between text, binary, and Base64 formats.",
+        icon: ArrowLeftRight,
     },
 ] as const;
 
@@ -43,7 +55,7 @@ export function HomePage() {
                 {TOOLS.map((tool) => {
                     const Icon = tool.icon;
                     return (
-                        <Link key={tool.title} to={tool.to} className="block">
+                        <Link key={tool.title} to={tool.to} className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                             <Card className="transition-shadow hover:shadow-md cursor-pointer">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">
