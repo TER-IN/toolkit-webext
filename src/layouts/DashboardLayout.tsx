@@ -120,8 +120,10 @@ export function DashboardLayout() {
                                         )
                                     }
                                 >
-                                    <Icon className="h-5 w-5 shrink-0" />
-                                    {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
+                                    <div className={cn("flex justify-center", isCollapsed ? "" : "gap-3")}>
+                                        <Icon className="h-5 w-5 shrink-0" />
+                                        {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
+                                    </div>
                                 </NavLink>
                             );
 
