@@ -2,7 +2,7 @@
 // TERIN Toolkit — Home Page
 // ============================================
 
-import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight } from "lucide-react";
+import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight, CodeXml } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
@@ -32,6 +32,12 @@ const TOOLS = [
         icon: Type,
     },
     {
+        to: "/programming-tools",
+        title: "Programming Tools",
+        description: "Syntax highlighting, JSON formatting, Markdown preview, and more developer utilities.",
+        icon: CodeXml,
+    },
+    {
         to: "/converters",
         title: "Converters",
         description: "Encode & decode between text, binary, and Base64 formats.",
@@ -55,7 +61,7 @@ export function HomePage() {
                 {TOOLS.map((tool) => {
                     const Icon = tool.icon;
                     return (
-                        <Link key={tool.title} to={tool.to} className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+                        <Link key={tool.title} to={tool.to} tabIndex={0} className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                             <Card className="transition-shadow hover:shadow-md cursor-pointer">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">

@@ -8,6 +8,7 @@ import { StringToolsPage } from "@/pages/StringToolsPage";
 import { ConvertersPage } from "@/pages/ConvertersPage";
 import { RedirectPage } from "@/pages/RedirectPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { ProgrammingToolsPage } from "@/pages/ProgrammingToolsPage";
 import { ThemeProvider } from "@/components/theme-provider";
 
 /**
@@ -28,6 +29,7 @@ function App() {
                         <Route path="/bookmarks" element={<BookmarksPage />} />
                         <Route path="/url-tools" element={<UrlToolsPage />} />
                         <Route path="/string-tools" element={<StringToolsPage />} />
+                        <Route path="/programming-tools" element={<ProgrammingToolsPage />} />
                         <Route path="/converters" element={<ConvertersPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Route>

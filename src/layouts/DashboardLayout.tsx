@@ -11,6 +11,7 @@ import {
     Bookmark,
     Link2,
     Type,
+    CodeXml,
     ArrowLeftRight,
     Settings,
     AlertCircle,
@@ -33,6 +34,7 @@ const NAV_ITEMS = [
     { to: "/bookmarks", label: "Bookmarks", icon: Bookmark },
     { to: "/url-tools", label: "URL Tools", icon: Link2 },
     { to: "/string-tools", label: "String Tools", icon: Type },
+    { to: "/programming-tools", label: "Programming Tools", icon: CodeXml },
     { to: "/converters", label: "Converters", icon: ArrowLeftRight },
 ] as const;
 
@@ -110,6 +112,7 @@ export function DashboardLayout() {
                                     key={to}
                                     to={to}
                                     end={to === "/"}
+                                    tabIndex={0}
                                     className={({ isActive }) =>
                                         cn(
                                             "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -146,6 +149,7 @@ export function DashboardLayout() {
                             const settingsLink = (
                                 <NavLink
                                     to="/settings"
+                                    tabIndex={0}
                                     className={({ isActive }) =>
                                         cn(
                                             "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full relative outline-none focus-visible:ring-2 focus-visible:ring-ring",
