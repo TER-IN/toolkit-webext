@@ -83,6 +83,7 @@ export function BookmarksPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [folderSearchQuery, setFolderSearchQuery] = useState("");
     const [folderSortMode, setFolderSortMode] = useState<"asc" | "desc">("asc");
+    const [bookmarkSortMode, setBookmarkSortMode] = useState<"date-desc" | "date-asc" | "alpha-asc" | "alpha-desc">("date-desc");
 
     // Drag and Drop folder state
     const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
@@ -193,9 +194,18 @@ export function BookmarksPage() {
             );
         }
 
-        // Sort by createdAt descending (newest first)
-        return list.sort((a, b) => b.createdAt - a.createdAt);
-    }, [allBookmarks, selectedFolderId, searchQuery]);
+        // Sort based on sortMode
+        return list.sort((a, b) => {
+            switch (bookmarkSortMode) {
+                case "date-asc": return a.createdAt - b.createdAt;
+                case "alpha-asc": return a.title.localeCompare(b.title);
+                case "alpha-desc": return b.title.localeCompare(a.title);
+                case "date-desc":
+                default:
+                    return b.createdAt - a.createdAt;
+            }
+        });
+    }, [allBookmarks, selectedFolderId, searchQuery, bookmarkSortMode]);
 
     /** Count bookmarks in a folder */
     function folderCount(folderId: string): number {
@@ -379,9 +389,14 @@ export function BookmarksPage() {
                                 onDragLeave={() => setDragOverFolderId(null)}
                                 onDrop={(e) => {
                                     e.preventDefault();
-                                    const draggedId = e.dataTransfer.getData("folderId");
+                                    const draggedFolderId = e.dataTransfer.getData("folderId");
+                                    const draggedBookmarkId = e.dataTransfer.getData("bookmarkId");
                                     setDragOverFolderId(null);
-                                    if (draggedId) moveFolder(draggedId, undefined);
+                                    if (draggedFolderId) {
+                                        moveFolder(draggedFolderId, undefined);
+                                    } else if (draggedBookmarkId) {
+                                        moveBookmark(draggedBookmarkId, DEFAULT_FOLDER.id);
+                                    }
                                 }}
                                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${dragOverFolderId === "top-level" ? "ring-2 ring-primary" : ""
                                     } ${selectedFolderId === null
@@ -432,14 +447,17 @@ export function BookmarksPage() {
                                         }}
                                         onDrop={async (e) => {
                                             e.preventDefault();
-                                            const draggedId = e.dataTransfer.getData("folderId");
+                                            const draggedFolderId = e.dataTransfer.getData("folderId");
+                                            const draggedBookmarkId = e.dataTransfer.getData("bookmarkId");
                                             setDragOverFolderId(null);
-                                            if (draggedId && draggedId !== folder.id) {
-                                                try {
-                                                    await moveFolder(draggedId, folder.id);
-                                                } catch (err: any) {
-                                                    alert(err.message);
+                                            try {
+                                                if (draggedFolderId && draggedFolderId !== folder.id) {
+                                                    await moveFolder(draggedFolderId, folder.id);
+                                                } else if (draggedBookmarkId) {
+                                                    await moveBookmark(draggedBookmarkId, folder.id);
                                                 }
+                                            } catch (err: any) {
+                                                alert(err.message);
                                             }
                                         }}
                                     >
@@ -516,15 +534,28 @@ export function BookmarksPage() {
                         </Button>
                     </div>
 
-                    {/* Search */}
-                    <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            placeholder="Search bookmarks by title or URL…"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9"
-                        />
+                    {/* Search and Sort */}
+                    <div className="flex items-center gap-4">
+                        <div className="relative flex-1 max-w-md">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder="Search bookmarks by title or URL…"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
+                        <Select value={bookmarkSortMode} onValueChange={(v: any) => setBookmarkSortMode(v)}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Sort by" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="date-desc">Newest First</SelectItem>
+                                <SelectItem value="date-asc">Oldest First</SelectItem>
+                                <SelectItem value="alpha-asc">A to Z</SelectItem>
+                                <SelectItem value="alpha-desc">Z to A</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Bookmark List */}
@@ -551,11 +582,16 @@ export function BookmarksPage() {
                             </p>
                         </div>
                     ) : (
-                        <div className="grid gap-3">
+                        <div className="grid gap-3 w-full overflow-hidden">
                             {filteredBookmarks.map((bookmark) => (
                                 <div
                                     key={bookmark.id}
-                                    className="group flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-md"
+                                    className="group flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-md cursor-grab active:cursor-grabbing w-full overflow-hidden"
+                                    draggable
+                                    onDragStart={(e) => {
+                                        e.dataTransfer.setData("bookmarkId", bookmark.id);
+                                        e.dataTransfer.effectAllowed = "move";
+                                    }}
                                 >
                                     {/* Favicon */}
                                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -577,15 +613,15 @@ export function BookmarksPage() {
 
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className="font-medium truncate text-sm">
+                                        <div className="flex items-center gap-2 mb-0.5 w-full">
+                                            <p className="font-medium truncate text-sm min-w-0 flex-1" title={bookmark.title}>
                                                 {bookmark.title}
                                             </p>
-                                            <Badge variant="outline" className="text-xs shrink-0">
+                                            <Badge variant="outline" className="text-xs shrink-0 whitespace-nowrap">
                                                 {folders[bookmark.folderId]?.name ?? "Unknown"}
                                             </Badge>
                                         </div>
-                                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                        <p className="text-xs text-muted-foreground truncate mt-0.5 w-full">
                                             {truncateUrl(bookmark.url, 70)}
                                         </p>
                                         <p className="text-xs text-muted-foreground/60 mt-0.5">
@@ -602,6 +638,7 @@ export function BookmarksPage() {
                                                     size="icon"
                                                     className="h-8 w-8"
                                                     onClick={() => window.open(bookmark.url, "_blank")}
+                                                    title="Open"
                                                 >
                                                     <ExternalLink className="h-4 w-4" />
                                                 </Button>
@@ -616,6 +653,7 @@ export function BookmarksPage() {
                                                     size="icon"
                                                     className="h-8 w-8"
                                                     onClick={() => handleOpenMove(bookmark)}
+                                                    title="Move to folder"
                                                 >
                                                     <FolderInput className="h-4 w-4" />
                                                 </Button>
@@ -630,6 +668,7 @@ export function BookmarksPage() {
                                                     size="icon"
                                                     className="h-8 w-8"
                                                     onClick={() => handleOpenEdit(bookmark)}
+                                                    title="Edit"
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
@@ -644,6 +683,7 @@ export function BookmarksPage() {
                                                     size="icon"
                                                     className="h-8 w-8 text-destructive hover:text-destructive"
                                                     onClick={() => removeBookmark(bookmark.id)}
+                                                    title="Delete"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
