@@ -18,6 +18,8 @@ import {
     Copy,
     Check,
     Trash2,
+    ChevronUp,
+    ChevronDown,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -111,6 +113,7 @@ export function StringToolsPage() {
     const [input, setInput] = useState("");
     const [output, setOutput] = useState("");
     const [copied, setCopied] = useState(false);
+    const [isInputVisible, setIsInputVisible] = useState(true);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const activeTool = SUB_TOOLS.find((t) => t.id === activeToolId)!;
@@ -265,15 +268,36 @@ export function StringToolsPage() {
                                 </TooltipTrigger>
                                 <TooltipContent>Clear input and output</TooltipContent>
                             </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => setIsInputVisible(!isInputVisible)}
+                                    >
+                                        {isInputVisible ? (
+                                            <ChevronUp className="h-4 w-4" />
+                                        ) : (
+                                            <ChevronDown className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {isInputVisible ? "Collapse input" : "Expand input"}
+                                </TooltipContent>
+                            </Tooltip>
                         </div>
                     </div>
-                    <Textarea
-                        id="string-input"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Paste or type your text here…"
-                        className="min-h-[150px] font-mono text-sm"
-                    />
+                    {isInputVisible && (
+                        <Textarea
+                            id="string-input"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Paste or type your text here…"
+                            className="min-h-[150px] font-mono text-sm"
+                        />
+                    )}
                 </div>
 
                 {/* Transform button */}
