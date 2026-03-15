@@ -9,6 +9,7 @@ import { ConvertersPage } from "@/pages/ConvertersPage";
 import { RedirectPage } from "@/pages/RedirectPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { ProgrammingToolsPage } from "@/pages/ProgrammingToolsPage";
+import { DateAndTimeToolsPage } from "@/pages/DateAndTimeToolsPage";
 import { ThemeProvider } from "@/components/theme-provider";
 
 /**
@@ -30,6 +31,7 @@ function App() {
                         <Route path="/url-tools" element={<UrlToolsPage />} />
                         <Route path="/string-tools" element={<StringToolsPage />} />
                         <Route path="/programming-tools" element={<ProgrammingToolsPage />} />
+                        <Route path="/date-and-time" element={<DateAndTimeToolsPage />} />
                         <Route path="/converters" element={<ConvertersPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Route>

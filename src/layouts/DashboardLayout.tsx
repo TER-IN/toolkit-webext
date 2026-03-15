@@ -12,6 +12,7 @@ import {
     Link2,
     Type,
     CodeXml,
+    Clock,
     ArrowLeftRight,
     Settings,
     AlertCircle,
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
     { to: "/url-tools", label: "URL Tools", icon: Link2 },
     { to: "/string-tools", label: "String Tools", icon: Type },
     { to: "/programming-tools", label: "Programming Tools", icon: CodeXml },
+    { to: "/date-and-time", label: "Date & Time", icon: Clock },
     { to: "/converters", label: "Converters", icon: ArrowLeftRight },
 ] as const;
 

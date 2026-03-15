@@ -2,7 +2,7 @@
 // TERIN Toolkit — Home Page
 // ============================================
 
-import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight, CodeXml } from "lucide-react";
+import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight, CodeXml, Clock } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
@@ -36,6 +36,12 @@ const TOOLS = [
         title: "Programming Tools",
         description: "Syntax highlighting, JSON formatting, Markdown preview, and more developer utilities.",
         icon: CodeXml,
+    },
+    {
+        to: "/date-and-time",
+        title: "Date & Time Tools",
+        description: "Manipulate, examine, and track dates and time.",
+        icon: Clock,
     },
     {
         to: "/converters",
