@@ -11,6 +11,7 @@ import { SettingsPage } from "@/pages/SettingsPage";
 import { ProgrammingToolsPage } from "@/pages/ProgrammingToolsPage";
 import { DateAndTimeToolsPage } from "@/pages/DateAndTimeToolsPage";
 import { TextAndListToolsPage } from "@/pages/TextAndListToolsPage";
+import { ImageToolsPage } from "@/pages/ImageToolsPage";
 import { ThemeProvider } from "@/components/theme-provider";
 
 /**
@@ -34,6 +35,7 @@ function App() {
                         <Route path="/programming-tools" element={<ProgrammingToolsPage />} />
                         <Route path="/date-and-time" element={<DateAndTimeToolsPage />} />
                         <Route path="/text-and-lists" element={<TextAndListToolsPage />} />
+                        <Route path="/image-tools" element={<ImageToolsPage />} />
                         <Route path="/converters" element={<ConvertersPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Route>

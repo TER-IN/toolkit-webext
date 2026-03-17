@@ -2,7 +2,7 @@
 // TERIN Toolkit — Home Page
 // ============================================
 
-import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight, CodeXml, Clock } from "lucide-react";
+import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight, CodeXml, Clock, Image as ImageIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
@@ -48,6 +48,12 @@ const TOOLS = [
         title: "Text & Lists",
         description: "Filter lines, convert linebreaks, reverse arrays, compare text.",
         icon: Type,
+    },
+    {
+        to: "/image-tools",
+        title: "Image Tools",
+        description: "Generate placeholder images.",
+        icon: ImageIcon,
     },
     {
         to: "/converters",

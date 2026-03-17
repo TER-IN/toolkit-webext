@@ -14,6 +14,7 @@ import {
     CodeXml,
     Clock,
     List,
+    Image as ImageIcon,
     ArrowLeftRight,
     Settings,
     AlertCircle,
@@ -39,10 +40,12 @@ const NAV_ITEMS = [
     { to: "/programming-tools", label: "Programming Tools", icon: CodeXml },
     { to: "/date-and-time", label: "Date & Time", icon: Clock },
     { to: "/text-and-lists", label: "Text & Lists", icon: List },
+    { to: "/image-tools", label: "Image Tools", icon: ImageIcon },
     { to: "/converters", label: "Converters", icon: ArrowLeftRight },
 ] as const;
 
 export function DashboardLayout() {
+    const location = useLocation();
     const [syncState, setSyncState] = useState<SyncState>("disconnected");
     // Load persisted state if available
     const [isCollapsed, setIsCollapsed] = useState(() => {
