@@ -137,21 +137,21 @@ export function DateAndTimeToolsPage() {
     };
 
     const renderDatetimeDifference = () => {
-        let resYears=0, resMonths=0, resDays=0, resHours=0, resMinutes=0, resSeconds=0;
+        let resYears = 0, resMonths = 0, resDays = 0, resHours = 0, resMinutes = 0, resSeconds = 0;
         let diffStr = "";
         if (diffStart && diffEnd) {
-             const d1 = new Date(diffStart);
-             const d2 = new Date(diffEnd);
-             if (!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
-                 const totalSeconds = Math.abs(differenceInSeconds(d2, d1));
-                 resYears = Math.abs(differenceInYears(d2, d1));
-                 resMonths = Math.abs(differenceInMonths(d2, d1));
-                 resDays = Math.abs(differenceInDays(d2, d1));
-                 resHours = Math.abs(differenceInHours(d2, d1));
-                 resMinutes = Math.abs(differenceInMinutes(d2, d1));
-                 resSeconds = totalSeconds;
-                 diffStr = `${resDays} Days, ${resHours % 24} Hours, ${resMinutes % 60} Minutes, ${resSeconds % 60} Seconds`;
-             }
+            const d1 = new Date(diffStart);
+            const d2 = new Date(diffEnd);
+            if (!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
+                const totalSeconds = Math.abs(differenceInSeconds(d2, d1));
+                resYears = Math.abs(differenceInYears(d2, d1));
+                resMonths = Math.abs(differenceInMonths(d2, d1));
+                resDays = Math.abs(differenceInDays(d2, d1));
+                resHours = Math.abs(differenceInHours(d2, d1));
+                resMinutes = Math.abs(differenceInMinutes(d2, d1));
+                resSeconds = totalSeconds;
+                diffStr = `${resDays} Days, ${resHours % 24} Hours, ${resMinutes % 60} Minutes, ${resSeconds % 60} Seconds`;
+            }
         }
         return (
             <div className="space-y-4">
@@ -160,16 +160,16 @@ export function DateAndTimeToolsPage() {
                     <div className="space-y-2"><Label>End Date/Time</Label><Input type="datetime-local" value={diffEnd} onChange={e => setDiffEnd(e.target.value)} /></div>
                 </div>
                 {diffStr && (
-                   <div className="space-y-2 border rounded p-4 bg-muted">
+                    <div className="space-y-2 border rounded p-4 bg-muted">
                         <div>Difference: <strong>{diffStr}</strong></div>
                         <div className="text-xs text-muted-foreground mt-2 border-t pt-2 grid grid-cols-2 gap-2">
-                           <div className="col-span-2">Years: {resYears} / Months: {resMonths}</div>
-                           <div>Days: {resDays}</div>
-                           <div>Hours: {resHours}</div>
-                           <div>Minutes: {resMinutes}</div>
-                           <div>Seconds: {resSeconds}</div>
+                            <div className="col-span-2">Years: {resYears} / Months: {resMonths}</div>
+                            <div>Days: {resDays}</div>
+                            <div>Hours: {resHours}</div>
+                            <div>Minutes: {resMinutes}</div>
+                            <div>Seconds: {resSeconds}</div>
                         </div>
-                   </div>
+                    </div>
                 )}
             </div>
         );
@@ -190,18 +190,18 @@ export function DateAndTimeToolsPage() {
             }
         }
         return (
-             <div className="space-y-4">
-                 <div className="space-y-2"><Label>Base Date/Time</Label><Input type="datetime-local" value={addBase} onChange={e => setAddBase(e.target.value)} /></div>
-                 <div className="grid grid-cols-3 gap-2">
-                    <div className="space-y-1"><Label className="text-xs">Years</Label><Input type="number" value={addYearsState} onChange={e=>setAddYears(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Months</Label><Input type="number" value={addMonthsState} onChange={e=>setAddMonths(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Days</Label><Input type="number" value={addDaysState} onChange={e=>setAddDays(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Hours</Label><Input type="number" value={addHoursState} onChange={e=>setAddHours(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Minutes</Label><Input type="number" value={addMinutesState} onChange={e=>setAddMinutes(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Seconds</Label><Input type="number" value={addSecondsState} onChange={e=>setAddSeconds(Number(e.target.value))} /></div>
-                 </div>
-                 {result && <div className="p-4 border rounded bg-muted">Result: <strong>{result}</strong></div>}
-             </div>
+            <div className="space-y-4">
+                <div className="space-y-2"><Label>Base Date/Time</Label><Input type="datetime-local" value={addBase} onChange={e => setAddBase(e.target.value)} /></div>
+                <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1"><Label className="text-xs">Years</Label><Input type="number" value={addYearsState} onChange={e => setAddYears(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Months</Label><Input type="number" value={addMonthsState} onChange={e => setAddMonths(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Days</Label><Input type="number" value={addDaysState} onChange={e => setAddDays(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Hours</Label><Input type="number" value={addHoursState} onChange={e => setAddHours(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Minutes</Label><Input type="number" value={addMinutesState} onChange={e => setAddMinutes(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Seconds</Label><Input type="number" value={addSecondsState} onChange={e => setAddSeconds(Number(e.target.value))} /></div>
+                </div>
+                {result && <div className="p-4 border rounded bg-muted">Result: <strong>{result}</strong></div>}
+            </div>
         );
     };
 
@@ -220,18 +220,18 @@ export function DateAndTimeToolsPage() {
             }
         }
         return (
-             <div className="space-y-4">
-                 <div className="space-y-2"><Label>Base Date/Time</Label><Input type="datetime-local" value={subBase} onChange={e => setSubBase(e.target.value)} /></div>
-                 <div className="grid grid-cols-3 gap-2">
-                    <div className="space-y-1"><Label className="text-xs">Years</Label><Input type="number" value={subYearsState} onChange={e=>setSubYears(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Months</Label><Input type="number" value={subMonthsState} onChange={e=>setSubMonths(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Days</Label><Input type="number" value={subDaysState} onChange={e=>setSubDays(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Hours</Label><Input type="number" value={subHoursState} onChange={e=>setSubHours(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Minutes</Label><Input type="number" value={subMinutesState} onChange={e=>setSubMinutes(Number(e.target.value))} /></div>
-                    <div className="space-y-1"><Label className="text-xs">Seconds</Label><Input type="number" value={subSecondsState} onChange={e=>setSubSeconds(Number(e.target.value))} /></div>
-                 </div>
-                 {result && <div className="p-4 border rounded bg-muted">Result: <strong>{result}</strong></div>}
-             </div>
+            <div className="space-y-4">
+                <div className="space-y-2"><Label>Base Date/Time</Label><Input type="datetime-local" value={subBase} onChange={e => setSubBase(e.target.value)} /></div>
+                <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1"><Label className="text-xs">Years</Label><Input type="number" value={subYearsState} onChange={e => setSubYears(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Months</Label><Input type="number" value={subMonthsState} onChange={e => setSubMonths(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Days</Label><Input type="number" value={subDaysState} onChange={e => setSubDays(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Hours</Label><Input type="number" value={subHoursState} onChange={e => setSubHours(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Minutes</Label><Input type="number" value={subMinutesState} onChange={e => setSubMinutes(Number(e.target.value))} /></div>
+                    <div className="space-y-1"><Label className="text-xs">Seconds</Label><Input type="number" value={subSecondsState} onChange={e => setSubSeconds(Number(e.target.value))} /></div>
+                </div>
+                {result && <div className="p-4 border rounded bg-muted">Result: <strong>{result}</strong></div>}
+            </div>
         );
     };
 
@@ -241,15 +241,15 @@ export function DateAndTimeToolsPage() {
         const m = Math.floor((swTime / 60000) % 60);
         const h = Math.floor(swTime / 3600000);
 
-        const formatted = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0').slice(0,2)}`;
+        const formatted = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0').slice(0, 2)}`;
 
         return (
             <div className="space-y-6 flex flex-col items-center p-8 border rounded-lg bg-card">
-               <div className="text-5xl font-mono tracking-wider">{formatted}</div>
-               <div className="flex gap-4">
-                  <Button onClick={() => setSwRunning(!swRunning)}>{swRunning ? 'Pause' : 'Start'}</Button>
-                  <Button variant="outline" onClick={() => { setSwRunning(false); setSwTime(0); }}>Reset</Button>
-               </div>
+                <div className="text-5xl font-mono tracking-wider">{formatted}</div>
+                <div className="flex gap-4">
+                    <Button onClick={() => setSwRunning(!swRunning)}>{swRunning ? 'Pause' : 'Start'}</Button>
+                    <Button variant="outline" onClick={() => { setSwRunning(false); setSwTime(0); }}>Reset</Button>
+                </div>
             </div>
         );
     };
@@ -257,21 +257,21 @@ export function DateAndTimeToolsPage() {
     const renderUnixToDate = () => {
         let result = "";
         if (unixInput) {
-             const ts = Number(unixInput);
-             if (!isNaN(ts)) {
-                 // Check if it's likely seconds instead of ms
-                 const isSeconds = ts < 100000000000; 
-                 const date = new Date(isSeconds ? ts * 1000 : ts);
-                 if (!isNaN(date.getTime())) {
-                      result = format(date, "yyyy-MM-dd HH:mm:ss OOOO");
-                 } else {
-                      result = "Invalid Timestamp";
-                 }
-             }
+            const ts = Number(unixInput);
+            if (!isNaN(ts)) {
+                // Check if it's likely seconds instead of ms
+                const isSeconds = ts < 100000000000;
+                const date = new Date(isSeconds ? ts * 1000 : ts);
+                if (!isNaN(date.getTime())) {
+                    result = format(date, "yyyy-MM-dd HH:mm:ss OOOO");
+                } else {
+                    result = "Invalid Timestamp";
+                }
+            }
         }
         return (
             <div className="space-y-4">
-                <div className="space-y-2"><Label>Unix Timestamp (seconds or ms)</Label><Input type="number" placeholder="1710522061" value={unixInput} onChange={e=>setUnixInput(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Unix Timestamp (seconds or ms)</Label><Input type="number" placeholder="1710522061" value={unixInput} onChange={e => setUnixInput(e.target.value)} /></div>
                 {result && <div className="p-4 border rounded bg-muted">Date string: <strong>{result}</strong></div>}
             </div>
         );
@@ -289,11 +289,11 @@ export function DateAndTimeToolsPage() {
         }
         return (
             <div className="space-y-4">
-                <div className="space-y-2"><Label>Date/Time String</Label><Input type="datetime-local" value={dateToUnixInput} onChange={e=>setDateToUnixInput(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Date/Time String</Label><Input type="datetime-local" value={dateToUnixInput} onChange={e => setDateToUnixInput(e.target.value)} /></div>
                 {resSeconds && (
                     <div className="p-4 border rounded bg-muted space-y-2">
-                         <div>Unix Timestamp (seconds): <strong>{resSeconds}</strong></div>
-                         <div>Unix Timestamp (ms): <strong>{resMs}</strong></div>
+                        <div>Unix Timestamp (seconds): <strong>{resSeconds}</strong></div>
+                        <div>Unix Timestamp (ms): <strong>{resMs}</strong></div>
                     </div>
                 )}
             </div>
@@ -307,20 +307,20 @@ export function DateAndTimeToolsPage() {
         const formatted = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
         return (
-             <div className="space-y-6 flex flex-col items-center p-8 border rounded-lg bg-card">
-                 {!timerRunning && timerLeft === timerInput ? (
+            <div className="space-y-6 flex flex-col items-center p-8 border rounded-lg bg-card">
+                {!timerRunning && timerLeft === timerInput ? (
                     <div className="flex gap-2 items-center">
-                        <Input type="number" className="w-24 text-center" value={Math.floor(timerInput/60)} onChange={e => { setTimerInput(Number(e.target.value)*60 + timerInput%60); setTimerLeft(Number(e.target.value)*60 + timerInput%60); }} placeholder="Min" />
+                        <Input type="number" className="w-24 text-center" value={Math.floor(timerInput / 60)} onChange={e => { setTimerInput(Number(e.target.value) * 60 + timerInput % 60); setTimerLeft(Number(e.target.value) * 60 + timerInput % 60); }} placeholder="Min" />
                         <span>:</span>
-                        <Input type="number" className="w-24 text-center" value={timerInput%60} onChange={e => { setTimerInput(Math.floor(timerInput/60)*60 + Number(e.target.value)); setTimerLeft(Math.floor(timerInput/60)*60 + Number(e.target.value)); }} placeholder="Sec" />
+                        <Input type="number" className="w-24 text-center" value={timerInput % 60} onChange={e => { setTimerInput(Math.floor(timerInput / 60) * 60 + Number(e.target.value)); setTimerLeft(Math.floor(timerInput / 60) * 60 + Number(e.target.value)); }} placeholder="Sec" />
                     </div>
-                 ) : (
+                ) : (
                     <div className="text-5xl font-mono tracking-wider">{formatted}</div>
-                 )}
-               <div className="flex gap-4">
-                  <Button onClick={() => setTimerRunning(!timerRunning)} disabled={timerLeft===0}>{timerRunning ? 'Pause' : 'Start'}</Button>
-                  <Button variant="outline" onClick={() => { setTimerRunning(false); setTimerLeft(timerInput); }}>Reset</Button>
-               </div>
+                )}
+                <div className="flex gap-4">
+                    <Button onClick={() => setTimerRunning(!timerRunning)} disabled={timerLeft === 0}>{timerRunning ? 'Pause' : 'Start'}</Button>
+                    <Button variant="outline" onClick={() => { setTimerRunning(false); setTimerLeft(timerInput); }}>Reset</Button>
+                </div>
             </div>
         );
     };
@@ -330,7 +330,7 @@ export function DateAndTimeToolsPage() {
             <div className="space-y-6 max-w-4xl">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Date & Time Tools</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Utils for manipulating, formatting, and tracking time.</p>
+                    <p className="text-sm text-muted-foreground mt-1">Manipulate, examine, and track dates and time, and more.</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -351,20 +351,20 @@ export function DateAndTimeToolsPage() {
                 </div>
 
                 <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-4">
-                     {(() => {
-                         const Icon = activeTool.icon;
-                         return (
-                             <>
-                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                                     <Icon className="h-5 w-5 text-primary" />
-                                 </div>
-                                 <div>
-                                     <p className="font-medium text-sm">{activeTool.label}</p>
-                                     <p className="text-xs text-muted-foreground">{activeTool.description}</p>
-                                 </div>
-                             </>
-                         );
-                     })()}
+                    {(() => {
+                        const Icon = activeTool.icon;
+                        return (
+                            <>
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                    <Icon className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-sm">{activeTool.label}</p>
+                                    <p className="text-xs text-muted-foreground">{activeTool.description}</p>
+                                </div>
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {/* Sub Tool Rendering */}

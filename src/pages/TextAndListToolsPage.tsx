@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import {
-    ArrowUpDown, Shuffle, ListPlus, WrapText, Hash, Filter, Repeat, Search, 
+    ArrowUpDown, Shuffle, ListPlus, WrapText, Hash, Filter, Repeat, Search,
     AlignLeft, AlignRight, Eraser, Upload, Copy, Check, Trash2, ChevronUp, ChevronDown, ArrowDownAZ,
     ArrowLeftRight, FileDiff, Plus, Minus
 } from "lucide-react";
@@ -38,13 +38,13 @@ const SUB_TOOLS: SubTool[] = [
     { id: "reverse-list", label: "Reverse List", description: "Sort a list in reverse order.", icon: ArrowUpDown, transform: reverseList },
     { id: "randomize-list", label: "List Randomizer", description: "Arrange the items of a list in random order.", icon: Shuffle, transform: randomizeList },
     { id: "sort-list", label: "Sort List", description: "Sort a list in alphabetical order.", icon: ArrowDownAZ, transform: sortList },
-    { 
+    {
         id: "add-text", label: "Add Text to Each Line", description: "Append constant or variable text to each line.", icon: ListPlus,
         defaultOptions: { prefix: "", suffix: "" },
         renderOptions: (options, setOptions) => (
             <div className="flex gap-4 items-center mb-4">
-                <div className="grid gap-1.5 w-full max-w-xs"><Label>Prefix</Label><Input value={options.prefix} onChange={e=>setOptions({prefix:e.target.value})} placeholder="e.g. -> " /></div>
-                <div className="grid gap-1.5 w-full max-w-xs"><Label>Suffix</Label><Input value={options.suffix} onChange={e=>setOptions({suffix:e.target.value})} placeholder="e.g. ," /></div>
+                <div className="grid gap-1.5 w-full max-w-xs"><Label>Prefix</Label><Input value={options.prefix} onChange={e => setOptions({ prefix: e.target.value })} placeholder="e.g. -> " /></div>
+                <div className="grid gap-1.5 w-full max-w-xs"><Label>Suffix</Label><Input value={options.suffix} onChange={e => setOptions({ suffix: e.target.value })} placeholder="e.g. ," /></div>
             </div>
         ),
         transform: (s, opts) => addTextToEachLine(s, opts.prefix, opts.suffix)
@@ -53,7 +53,7 @@ const SUB_TOOLS: SubTool[] = [
         id: "convert-tabs", label: "Convert Tabs to Spaces", description: "Convert tabs to the specified number of spaces.", icon: AlignLeft,
         defaultOptions: { spacesCount: 4 },
         renderOptions: (options, setOptions) => (
-            <div className="grid gap-1.5 w-full max-w-xs mb-4"><Label>Spaces per tab</Label><Input type="number" value={options.spacesCount} onChange={e=>setOptions({spacesCount:parseInt(e.target.value)||0})} /></div>
+            <div className="grid gap-1.5 w-full max-w-xs mb-4"><Label>Spaces per tab</Label><Input type="number" value={options.spacesCount} onChange={e => setOptions({ spacesCount: parseInt(e.target.value) || 0 })} /></div>
         ),
         transform: (s, opts) => convertTabsToSpaces(s, opts.spacesCount)
     },
@@ -61,7 +61,7 @@ const SUB_TOOLS: SubTool[] = [
         id: "convert-spaces", label: "Convert Spaces to Tabs", description: "Convert the specified number of spaces to tabs.", icon: AlignRight,
         defaultOptions: { spacesCount: 4 },
         renderOptions: (options, setOptions) => (
-            <div className="grid gap-1.5 w-full max-w-xs mb-4"><Label>Spaces to tab logic</Label><Input type="number" value={options.spacesCount} onChange={e=>setOptions({spacesCount:parseInt(e.target.value)||0})} /></div>
+            <div className="grid gap-1.5 w-full max-w-xs mb-4"><Label>Spaces to tab logic</Label><Input type="number" value={options.spacesCount} onChange={e => setOptions({ spacesCount: parseInt(e.target.value) || 0 })} /></div>
         ),
         transform: (s, opts) => convertSpacesToTabs(s, opts.spacesCount)
     },
@@ -73,15 +73,15 @@ const SUB_TOOLS: SubTool[] = [
         defaultOptions: { search: "", matchMode: "contains", caseSensitive: false },
         renderOptions: (options, setOptions) => (
             <div className="flex gap-4 items-end mb-4 flex-wrap">
-                <div className="grid gap-1.5 w-full max-w-xs"><Label>Search Term</Label><Input value={options.search} onChange={e=>setOptions({search:e.target.value})} /></div>
+                <div className="grid gap-1.5 w-full max-w-xs"><Label>Search Term</Label><Input value={options.search} onChange={e => setOptions({ search: e.target.value })} /></div>
                 <div className="grid gap-1.5 w-40">
                     <Label>Mode</Label>
-                    <Select value={options.matchMode} onValueChange={v=>setOptions({matchMode:v})}>
-                        <SelectTrigger><SelectValue/></SelectTrigger>
+                    <Select value={options.matchMode} onValueChange={v => setOptions({ matchMode: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent><SelectItem value="contains">Contains</SelectItem><SelectItem value="not_contains">Does not contain</SelectItem></SelectContent>
                     </Select>
                 </div>
-                <div className="flex items-center gap-2 pb-2"><Switch checked={options.caseSensitive} onCheckedChange={v=>setOptions({caseSensitive:v})} /><Label>Case Sensitive</Label></div>
+                <div className="flex items-center gap-2 pb-2"><Switch checked={options.caseSensitive} onCheckedChange={v => setOptions({ caseSensitive: v })} /><Label>Case Sensitive</Label></div>
             </div>
         ),
         transform: (s, opts) => filterLines(s, opts.search, opts.matchMode, opts.caseSensitive)
@@ -90,9 +90,9 @@ const SUB_TOOLS: SubTool[] = [
         id: "repeat-text", label: "Repeat Text", description: "Repeat a text multiple times.", icon: Repeat,
         defaultOptions: { count: 2, separator: "" },
         renderOptions: (options, setOptions) => (
-             <div className="flex gap-4 items-center mb-4">
-                <div className="grid gap-1.5 w-24"><Label>Times</Label><Input type="number" value={options.count} onChange={e=>setOptions({count:parseInt(e.target.value)||0})} /></div>
-                <div className="grid gap-1.5 w-full max-w-xs"><Label>Separator</Label><Input value={options.separator} onChange={e=>setOptions({separator:e.target.value})} /></div>
+            <div className="flex gap-4 items-center mb-4">
+                <div className="grid gap-1.5 w-24"><Label>Times</Label><Input type="number" value={options.count} onChange={e => setOptions({ count: parseInt(e.target.value) || 0 })} /></div>
+                <div className="grid gap-1.5 w-full max-w-xs"><Label>Separator</Label><Input value={options.separator} onChange={e => setOptions({ separator: e.target.value })} /></div>
             </div>
         ),
         transform: (s, opts) => repeatText(s, opts.count, opts.separator)
@@ -101,11 +101,11 @@ const SUB_TOOLS: SubTool[] = [
         id: "find-replace", label: "Find and Replace", description: "Search and replace text.", icon: Search,
         defaultOptions: { find: "", replace: "", useRegex: false, caseSensitive: false },
         renderOptions: (options, setOptions) => (
-             <div className="flex gap-4 items-end mb-4 flex-wrap">
-                <div className="grid gap-1.5 w-full max-w-sm"><Label>Find</Label><Input value={options.find} onChange={e=>setOptions({find:e.target.value})} /></div>
-                <div className="grid gap-1.5 w-full max-w-sm"><Label>Replace With</Label><Input value={options.replace} onChange={e=>setOptions({replace:e.target.value})} /></div>
-                <div className="flex items-center gap-2 pb-2"><Switch checked={options.useRegex} onCheckedChange={v=>setOptions({useRegex:v})} /><Label>Regex</Label></div>
-                <div className="flex items-center gap-2 pb-2"><Switch checked={options.caseSensitive} onCheckedChange={v=>setOptions({caseSensitive:v})} /><Label>Case Sensitive</Label></div>
+            <div className="flex gap-4 items-end mb-4 flex-wrap">
+                <div className="grid gap-1.5 w-full max-w-sm"><Label>Find</Label><Input value={options.find} onChange={e => setOptions({ find: e.target.value })} /></div>
+                <div className="grid gap-1.5 w-full max-w-sm"><Label>Replace With</Label><Input value={options.replace} onChange={e => setOptions({ replace: e.target.value })} /></div>
+                <div className="flex items-center gap-2 pb-2"><Switch checked={options.useRegex} onCheckedChange={v => setOptions({ useRegex: v })} /><Label>Regex</Label></div>
+                <div className="flex items-center gap-2 pb-2"><Switch checked={options.caseSensitive} onCheckedChange={v => setOptions({ caseSensitive: v })} /><Label>Case Sensitive</Label></div>
             </div>
         ),
         transform: (s, opts) => findAndReplace(s, opts.find, opts.replace, opts.useRegex, opts.caseSensitive)
@@ -123,7 +123,7 @@ export function TextAndListToolsPage() {
     const [output, setOutput] = useState("");
     const [copied, setCopied] = useState(false);
     const [isInputVisible, setIsInputVisible] = useState(true);
-    
+
     // Text Compare State
     const [leftText, setLeftText] = useState("");
     const [rightText, setRightText] = useState("");
@@ -138,7 +138,7 @@ export function TextAndListToolsPage() {
 
     const additions = diffResult.filter(part => part.added).length;
     const deletions = diffResult.filter(part => part.removed).length;
-    
+
     // Maintain options for tools that need them
     const [toolOptions, setToolOptions] = useState<Record<string, any>>(() => {
         const defaults: Record<string, any> = {};
@@ -189,11 +189,11 @@ export function TextAndListToolsPage() {
 
         const reader = new FileReader();
         reader.onload = (ev) => {
-             const text = ev.target?.result;
-             if (typeof text === "string") {
-                 setInput(text);
-                 setOutput("");
-             }
+            const text = ev.target?.result;
+            if (typeof text === "string") {
+                setInput(text);
+                setOutput("");
+            }
         };
         reader.readAsText(file);
         e.target.value = "";
@@ -210,7 +210,7 @@ export function TextAndListToolsPage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Text & List Tools</h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Measure and manipulate text strings and lists.
+                        Filter lines, convert linebreaks, reverse arrays, compare text, and more.
                     </p>
                 </div>
 
@@ -263,7 +263,7 @@ export function TextAndListToolsPage() {
                                     <SelectItem value="lines">Line Level</SelectItem>
                                 </SelectContent>
                             </Select>
-                            
+
                             {diffResult.length > 0 && (
                                 <div className="flex gap-2">
                                     <Badge variant="outline" className="text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/20">
@@ -286,7 +286,7 @@ export function TextAndListToolsPage() {
                                         <Copy className="h-3 w-3" />
                                     </Button>
                                 </div>
-                                <Textarea 
+                                <Textarea
                                     className="flex-1 resize-none font-mono text-sm leading-relaxed p-4 bg-muted/30"
                                     placeholder="Paste original text here..."
                                     value={leftText}
@@ -302,7 +302,7 @@ export function TextAndListToolsPage() {
                                         <Copy className="h-3 w-3" />
                                     </Button>
                                 </div>
-                                <Textarea 
+                                <Textarea
                                     className="flex-1 resize-none font-mono text-sm leading-relaxed p-4 bg-muted/30"
                                     placeholder="Paste modified text here..."
                                     value={rightText}
@@ -369,7 +369,7 @@ export function TextAndListToolsPage() {
                         </div>
 
                         <Button onClick={handleTransform}>
-                             Run Tool ({activeTool.label})
+                            Run Tool ({activeTool.label})
                         </Button>
 
                         {output !== "" && (

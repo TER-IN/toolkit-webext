@@ -54,7 +54,7 @@ import "prismjs/components/prism-bash";
 import "prismjs/components/prism-sql";
 import "prismjs/components/prism-markdown";
 // Themes - let's use a nice dark theme by default, maybe Tomorrow Night or Okaidia
-import "prismjs/themes/prism-okaidia.css"; 
+import "prismjs/themes/prism-okaidia.css";
 
 // ---- Sub-tool definitions ----
 
@@ -121,7 +121,7 @@ export function ProgrammingToolsPage() {
     const [tableRows, setTableRows] = useState(3);
     const [tableCols, setTableCols] = useState(3);
     const [tableData, setTableData] = useState<string[][]>(Array(3).fill(null).map(() => Array(3).fill("")));
-    const [tableAlign, setTableAlign] = useState<("left"| "center" | "right")[]>(Array(3).fill("left"));
+    const [tableAlign, setTableAlign] = useState<("left" | "center" | "right")[]>(Array(3).fill("left"));
 
     const activeTool = SUB_TOOLS.find((t) => t.id === activeToolId)!;
 
@@ -229,7 +229,7 @@ export function ProgrammingToolsPage() {
         let formattedJson = "";
         let errorMsg = "";
         let isValid = false;
-        
+
         if (input.trim()) {
             try {
                 const parsed = JSON.parse(input);
@@ -252,14 +252,14 @@ export function ProgrammingToolsPage() {
                 {input.trim() && (
                     <div className={cn(
                         "p-4 text-sm rounded-md border",
-                        isValid 
-                            ? "text-green-500 bg-green-500/10 border-green-500/20" 
+                        isValid
+                            ? "text-green-500 bg-green-500/10 border-green-500/20"
                             : "text-red-500 bg-red-500/10 border-red-500/20"
                     )}>
                         {isValid ? "✅ Valid JSON" : `❌ Invalid JSON: ${errorMsg}`}
                     </div>
                 )}
-                
+
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
                         Formatted JSON Output
@@ -322,9 +322,9 @@ export function ProgrammingToolsPage() {
             setTableData([...tableData, Array(tableCols).fill("")]);
         };
         const removeRow = () => {
-             if (tableRows <= 1) return;
-             setTableRows(tableRows - 1);
-             setTableData(tableData.slice(0, tableRows - 1));
+            if (tableRows <= 1) return;
+            setTableRows(tableRows - 1);
+            setTableData(tableData.slice(0, tableRows - 1));
         };
         const addCol = () => {
             setTableCols(tableCols + 1);
@@ -332,21 +332,21 @@ export function ProgrammingToolsPage() {
             setTableAlign([...tableAlign, "left"]);
         };
         const removeCol = () => {
-             if (tableCols <= 1) return;
-             setTableCols(tableCols - 1);
-             setTableData(tableData.map(row => row.slice(0, tableCols - 1)));
-             setTableAlign(tableAlign.slice(0, tableCols - 1));
+            if (tableCols <= 1) return;
+            setTableCols(tableCols - 1);
+            setTableData(tableData.map(row => row.slice(0, tableCols - 1)));
+            setTableAlign(tableAlign.slice(0, tableCols - 1));
         };
 
         const generateMarkdown = () => {
             // max lengths
             const colWidths = Array(tableCols).fill(3);
             for (let r = 0; r < tableRows; r++) {
-               for (let c = 0; c < tableCols; c++) {
-                   colWidths[c] = Math.max(colWidths[c], (tableData[r][c] || "").length);
-               }
+                for (let c = 0; c < tableCols; c++) {
+                    colWidths[c] = Math.max(colWidths[c], (tableData[r][c] || "").length);
+                }
             }
-            
+
             let md = "";
             for (let r = 0; r < tableRows; r++) {
                 md += "|";
@@ -366,7 +366,7 @@ export function ProgrammingToolsPage() {
                         if (align === "center") dashes = ":" + "-".repeat(colWidths[c]) + ":";
                         else if (align === "right") dashes = "-".repeat(colWidths[c] + 1) + ":";
                         else dashes = "-" + "-".repeat(colWidths[c]) + "-";
-                        
+
                         md += dashes + "|";
                     }
                     md += "\n";
@@ -380,54 +380,54 @@ export function ProgrammingToolsPage() {
         return (
             <div className="space-y-6">
                 <div className="flex flex-wrap gap-4 items-center">
-                   <div className="flex gap-2 items-center">
-                       <span className="text-sm font-medium">Rows: {tableRows}</span>
-                       <Button variant="outline" size="icon" className="h-8 w-8" onClick={removeRow}><Minus className="h-4 w-4" /></Button>
-                       <Button variant="outline" size="icon" className="h-8 w-8" onClick={addRow}><Plus className="h-4 w-4" /></Button>
-                   </div>
-                   <div className="flex gap-2 items-center">
-                       <span className="text-sm font-medium">Cols: {tableCols}</span>
-                       <Button variant="outline" size="icon" className="h-8 w-8" onClick={removeCol}><Minus className="h-4 w-4" /></Button>
-                       <Button variant="outline" size="icon" className="h-8 w-8" onClick={addCol}><Plus className="h-4 w-4" /></Button>
-                   </div>
-                   <Button variant="outline" size="sm" onClick={() => setTableData(Array(tableRows).fill(null).map(() => Array(tableCols).fill("")))}>Clear Table</Button>
+                    <div className="flex gap-2 items-center">
+                        <span className="text-sm font-medium">Rows: {tableRows}</span>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={removeRow}><Minus className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={addRow}><Plus className="h-4 w-4" /></Button>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                        <span className="text-sm font-medium">Cols: {tableCols}</span>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={removeCol}><Minus className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={addCol}><Plus className="h-4 w-4" /></Button>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setTableData(Array(tableRows).fill(null).map(() => Array(tableCols).fill("")))}>Clear Table</Button>
                 </div>
-                
+
                 <div className="overflow-x-auto border rounded-lg max-w-full">
                     <table className="w-full text-sm">
                         <thead className="bg-muted break-normal whitespace-pre">
-                           <tr>
-                             {Array(tableCols).fill(null).map((_, c) => (
-                                 <th key={c} className="p-2 border-b border-r last:border-r-0 min-w-[150px]">
-                                     <div className="flex gap-1 justify-center mb-2">
-                                        <Button variant={tableAlign[c] === 'left' ? 'secondary' : 'ghost'} size="icon" className="h-6 w-6" onClick={() => updateAlign(c, "left")}><AlignLeft className="h-3 w-3" /></Button>
-                                        <Button variant={tableAlign[c] === 'center' ? 'secondary' : 'ghost'} size="icon" className="h-6 w-6" onClick={() => updateAlign(c, "center")}><AlignCenter className="h-3 w-3" /></Button>
-                                        <Button variant={tableAlign[c] === 'right' ? 'secondary' : 'ghost'} size="icon" className="h-6 w-6" onClick={() => updateAlign(c, "right")}><AlignRight className="h-3 w-3" /></Button>
-                                     </div>
-                                     <input 
-                                         type="text" 
-                                         value={tableData[0]?.[c] || ""} 
-                                         onChange={e => updateCell(0, c, e.target.value)}
-                                         placeholder="Header"
-                                         className="w-full p-1 border rounded text-center bg-background"
-                                     />
-                                 </th>
-                             ))}
-                           </tr>
+                            <tr>
+                                {Array(tableCols).fill(null).map((_, c) => (
+                                    <th key={c} className="p-2 border-b border-r last:border-r-0 min-w-[150px]">
+                                        <div className="flex gap-1 justify-center mb-2">
+                                            <Button variant={tableAlign[c] === 'left' ? 'secondary' : 'ghost'} size="icon" className="h-6 w-6" onClick={() => updateAlign(c, "left")}><AlignLeft className="h-3 w-3" /></Button>
+                                            <Button variant={tableAlign[c] === 'center' ? 'secondary' : 'ghost'} size="icon" className="h-6 w-6" onClick={() => updateAlign(c, "center")}><AlignCenter className="h-3 w-3" /></Button>
+                                            <Button variant={tableAlign[c] === 'right' ? 'secondary' : 'ghost'} size="icon" className="h-6 w-6" onClick={() => updateAlign(c, "right")}><AlignRight className="h-3 w-3" /></Button>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={tableData[0]?.[c] || ""}
+                                            onChange={e => updateCell(0, c, e.target.value)}
+                                            placeholder="Header"
+                                            className="w-full p-1 border rounded text-center bg-background"
+                                        />
+                                    </th>
+                                ))}
+                            </tr>
                         </thead>
                         <tbody>
                             {tableData.slice(1).map((row, r) => (
                                 <tr key={r + 1} className="border-b last:border-0">
-                                   {row.map((_val, c) => (
-                                       <td key={c} className="p-2 border-r last:border-r-0">
-                                            <input 
-                                                 type="text" 
-                                                 value={tableData[r + 1][c] || ""} 
-                                                 onChange={e => updateCell(r + 1, c, e.target.value)}
-                                                 className="w-full p-1 border rounded"
-                                             />
-                                       </td>
-                                   ))}
+                                    {row.map((_val, c) => (
+                                        <td key={c} className="p-2 border-r last:border-r-0">
+                                            <input
+                                                type="text"
+                                                value={tableData[r + 1][c] || ""}
+                                                onChange={e => updateCell(r + 1, c, e.target.value)}
+                                                className="w-full p-1 border rounded"
+                                            />
+                                        </td>
+                                    ))}
                                 </tr>
                             ))}
                         </tbody>
@@ -442,7 +442,7 @@ export function ProgrammingToolsPage() {
                             setCopied(true);
                             setTimeout(() => setCopied(false), 2000);
                         }}>
-                             {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                            {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                         </Button>
                     </div>
                     <div className="relative rounded-lg border bg-[#272822] overflow-hidden min-h-[150px]">
@@ -458,7 +458,7 @@ export function ProgrammingToolsPage() {
     const renderHtmlFormatter = () => {
         let formattedHtml = "";
         let errorMsg = "";
-        
+
         if (input.trim()) {
             try {
                 // Check if js_beautify is imported directly or has .html
@@ -487,7 +487,7 @@ export function ProgrammingToolsPage() {
                         {`❌ Error: ${errorMsg}`}
                     </div>
                 )}
-                
+
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
                         Formatted HTML Output
@@ -515,7 +515,7 @@ export function ProgrammingToolsPage() {
     const renderSqlFormatter = () => {
         let formattedSql = "";
         let errorMsg = "";
-        
+
         if (input.trim()) {
             try {
                 formattedSql = sqlFormatter(input, { language: 'sql', tabWidth: 4 });
@@ -538,7 +538,7 @@ export function ProgrammingToolsPage() {
                         {`❌ Invalid SQL: ${errorMsg}`}
                     </div>
                 )}
-                
+
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
                         Formatted SQL Output
@@ -570,7 +570,7 @@ export function ProgrammingToolsPage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Programming Tools</h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Developer utilities like syntax highlighting, formatting, and validation.
+                        Syntax highlighting, JSON formatting, Markdown preview, and more developer utilities.
                     </p>
                 </div>
 
@@ -620,76 +620,76 @@ export function ProgrammingToolsPage() {
 
                 {/* Shared Input area (Used by most tools) */}
                 {activeToolId !== "markdown-table-generator" && (
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <Label htmlFor="code-input">Input Code</Label>
-                        <div className="flex gap-2">
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept={ACCEPTED_FILE_TYPES}
-                                onChange={handleFileUpload}
-                                className="hidden"
-                            />
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        Upload File
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Load file into input area</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleClear}
-                                        disabled={!input}
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Clear
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Clear input</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => setIsInputVisible(!isInputVisible)}
-                                    >
-                                        {isInputVisible ? (
-                                            <ChevronUp className="h-4 w-4" />
-                                        ) : (
-                                            <ChevronDown className="h-4 w-4" />
-                                        )}
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {isInputVisible ? "Collapse input" : "Expand input"}
-                                </TooltipContent>
-                            </Tooltip>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="code-input">Input Code</Label>
+                            <div className="flex gap-2">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept={ACCEPTED_FILE_TYPES}
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                />
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            <Upload className="mr-2 h-4 w-4" />
+                                            Upload File
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Load file into input area</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleClear}
+                                            disabled={!input}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Clear
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Clear input</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => setIsInputVisible(!isInputVisible)}
+                                        >
+                                            {isInputVisible ? (
+                                                <ChevronUp className="h-4 w-4" />
+                                            ) : (
+                                                <ChevronDown className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {isInputVisible ? "Collapse input" : "Expand input"}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
                         </div>
+                        {isInputVisible && (
+                            <Textarea
+                                id="code-input"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Paste or type your code here…"
+                                className="min-h-[150px] font-mono text-sm"
+                                spellCheck={false}
+                            />
+                        )}
                     </div>
-                    {isInputVisible && (
-                        <Textarea
-                            id="code-input"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder="Paste or type your code here…"
-                            className="min-h-[150px] font-mono text-sm"
-                            spellCheck={false}
-                        />
-                    )}
-                </div>
                 )}
 
                 {/* Tool specific rendering */}

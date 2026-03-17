@@ -179,7 +179,7 @@ export function StringToolsPage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">String Tools</h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Transform, measure, and clean up text strings.
+                        Transform, measure, and clean up text — case conversion, accents, spaces, and more.
                     </p>
                 </div>
 

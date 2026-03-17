@@ -2,7 +2,17 @@
 // TERIN Toolkit — Home Page
 // ============================================
 
-import { Paintbrush, Link2, FolderOpen, Type, ArrowLeftRight, CodeXml, Clock, Image as ImageIcon } from "lucide-react";
+import {
+    Paintbrush,
+    Link2,
+    FolderOpen,
+    Type,
+    ArrowLeftRight,
+    CodeXml,
+    Clock,
+    Image as ImageIcon,
+    DollarSign,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
@@ -28,7 +38,7 @@ const TOOLS = [
     {
         to: "/string-tools",
         title: "String Tools",
-        description: "Transform, measure, and clean up text — case conversion, accents, spaces.",
+        description: "Transform, measure, and clean up text — case conversion, accents, spaces, and more.",
         icon: Type,
     },
     {
@@ -40,25 +50,31 @@ const TOOLS = [
     {
         to: "/date-and-time",
         title: "Date & Time Tools",
-        description: "Manipulate, examine, and track dates and time.",
+        description: "Manipulate, examine, and track dates and time, and more.",
         icon: Clock,
     },
     {
         to: "/text-and-lists",
-        title: "Text & Lists",
-        description: "Filter lines, convert linebreaks, reverse arrays, compare text.",
+        title: "Text & Lists Tools",
+        description: "Filter lines, convert linebreaks, reverse arrays, compare text, and more.",
         icon: Type,
     },
     {
         to: "/image-tools",
         title: "Image Tools",
-        description: "Generate placeholder images.",
+        description: "Manipulate, edit and generate images, and more.",
         icon: ImageIcon,
+    },
+    {
+        to: "/finance-tools",
+        title: "Finance Tools",
+        description: "Portfolio tracking & analysis, indicators, financial calculations, and more.",
+        icon: DollarSign,
     },
     {
         to: "/converters",
         title: "Converters",
-        description: "Encode & decode between text, binary, and Base64 formats.",
+        description: "Encode & decode between text, binary, and Base64 formats, and more.",
         icon: ArrowLeftRight,
     },
 ] as const;
@@ -70,7 +86,7 @@ export function HomePage() {
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Welcome to TERIN Toolkit</h1>
                 <p className="mt-2 text-muted-foreground">
-                    Your developer productivity toolkit — right in the browser.
+                    Your productivity toolkit — right in the browser.
                 </p>
             </div>
 
