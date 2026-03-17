@@ -8,6 +8,7 @@ import { Download, Upload, FileJson, AlertCircle, CheckCircle2, FolderSync, Unli
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StorageManager, type ExportPayload, type ImportStrategy } from "@/lib/storage";
@@ -20,6 +21,11 @@ export function SettingsPage() {
     const [importFile, setImportFile] = useState<File | null>(null);
     const [isImporting, setIsImporting] = useState(false);
     const [importStatus, setImportStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+    const [isKeySet, setIsKeySet] = useState(false);
+    const [isEditingKey, setIsEditingKey] = useState(false);
+    const [newEtherscanApiKey, setNewEtherscanApiKey] = useState("");
+    const [isSavingSettings, setIsSavingSettings] = useState(false);
 
     // Auto-Sync state
     const [syncState, setSyncState] = useState<SyncState>("disconnected");
@@ -35,9 +41,24 @@ export function SettingsPage() {
                 const ts = await StorageManager.get<number>("last_sync_time", 0);
                 if (ts > 0) setLastSyncTime(ts);
             }
+
+            // Check whether API key exists, do not load it into UI state
+            const key = await StorageManager.get<string>("etherscan_api_key", "");
+            setIsKeySet(!!key);
         }
         initSync();
     }, []);
+
+    async function handleSaveEtherscanApiKey() {
+        if (!newEtherscanApiKey.trim()) return;
+
+        setIsSavingSettings(true);
+        await StorageManager.set("etherscan_api_key", newEtherscanApiKey.trim());
+        setIsKeySet(true);
+        setNewEtherscanApiKey("");
+        setIsEditingKey(false);
+        setTimeout(() => setIsSavingSettings(false), 500);
+    }
 
     async function handleSelectSyncFolder() {
         try {
@@ -188,6 +209,100 @@ export function SettingsPage() {
                         <Monitor className="mr-2 h-4 w-4" />
                         System
                     </Button>
+                </div>
+            </section>
+
+            <Separator />
+
+            {/* ==== Integrations Section ==== */}
+            <section className="space-y-4">
+                <div className="flex justify-between items-end">
+                    <div>
+                        <h2 className="text-lg font-semibold">API Integrations</h2>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Configure API keys needed for advanced extension features.
+                        </p>
+                    </div>
+                    {isEditingKey && (
+                        <Button
+                            onClick={handleSaveEtherscanApiKey}
+                            disabled={isSavingSettings || !newEtherscanApiKey.trim()}
+                        >
+                            {isSavingSettings ? "Saving..." : "Save API Key"}
+                        </Button>
+                    )}
+                </div>
+
+                <div className="space-y-3">
+                    <Label htmlFor="etherscan-api-key">Etherscan API Key</Label>
+
+                    {!isEditingKey ? (
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-muted-foreground">
+                                {isKeySet ? "API key is saved" : "No API key set"}
+                            </div>
+
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setIsEditingKey(true)}
+                                >
+                                    {isKeySet ? "Replace" : "Set API Key"}
+                                </Button>
+
+                                {isKeySet && (
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={async () => {
+                                            await StorageManager.set("etherscan_api_key", "");
+                                            setIsKeySet(false);
+                                            setNewEtherscanApiKey("");
+                                            setIsEditingKey(false);
+                                        }}
+                                    >
+                                        Remove
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            <Input
+                                id="etherscan-api-key"
+                                type="password"
+                                placeholder="Enter Etherscan API Key"
+                                value={newEtherscanApiKey}
+                                onChange={(e) => setNewEtherscanApiKey(e.target.value)}
+                            />
+
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    onClick={handleSaveEtherscanApiKey}
+                                    disabled={isSavingSettings || !newEtherscanApiKey.trim()}
+                                >
+                                    {isSavingSettings ? "Saving..." : "Save"}
+                                </Button>
+
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setNewEtherscanApiKey("");
+                                        setIsEditingKey(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    <p className="text-xs text-muted-foreground">
+                        Used by finance tools to retrieve transactions' data.
+                    </p>
                 </div>
             </section>
 

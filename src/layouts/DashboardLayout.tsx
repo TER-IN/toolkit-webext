@@ -20,6 +20,7 @@ import {
     AlertCircle,
     PanelLeftClose,
     PanelLeftOpen,
+    DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FsSyncManager, type SyncState } from "@/lib/fs-sync";
@@ -41,6 +42,7 @@ const NAV_ITEMS = [
     { to: "/date-and-time", label: "Date & Time", icon: Clock },
     { to: "/text-and-lists", label: "Text & Lists", icon: List },
     { to: "/image-tools", label: "Image Tools", icon: ImageIcon },
+    { to: "/finance-tools", label: "Finance Tools", icon: DollarSign },
     { to: "/converters", label: "Converters", icon: ArrowLeftRight },
 ] as const;
 

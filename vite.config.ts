@@ -27,7 +27,7 @@ export default defineConfig({
         __APP_VERSION__: JSON.stringify(pkg.version),
     },
     build: {
-        chunkSizeWarningLimit: 1000,
+        chunkSizeWarningLimit: 2000,
         rollupOptions: {
             // Include the dashboard HTML so CRXJS bundles it into dist/
             input: {
