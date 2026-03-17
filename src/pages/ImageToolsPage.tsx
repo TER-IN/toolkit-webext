@@ -7,10 +7,40 @@ import { Copy, Download, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+interface SubTool {
+    id: string;
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+}
+
+const SUB_TOOLS: SubTool[] = [
+    {
+        id: "placeholder-generator",
+        label: "Placeholder Generator",
+        description:
+            "Generate placeholder images with custom dimensions, colors, text, and format.",
+        icon: ImageIcon,
+    },
+];
 
 export function ImageToolsPage() {
+    const [activeToolId, setActiveToolId] = useState(SUB_TOOLS[0].id);
+
     const [width, setWidth] = useState(800);
     const [height, setHeight] = useState(600);
     const [bgColor, setBgColor] = useState("#cccccc");
@@ -19,6 +49,11 @@ export function ImageToolsPage() {
     const [format, setFormat] = useState<"image/png" | "image/jpeg" | "image/webp">("image/png");
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const activeTool = SUB_TOOLS.find((t) => t.id === activeToolId)!;
+
+    const handleToolChange = useCallback((toolId: string) => {
+        setActiveToolId(toolId);
+    }, []);
 
     const drawPlaceholder = useCallback(() => {
         const canvas = canvasRef.current;
@@ -27,29 +62,23 @@ export function ImageToolsPage() {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        // Ensure canvas physical size matches the input size
         canvas.width = Math.max(1, width);
         canvas.height = Math.max(1, height);
 
-        // Fill background
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw text
         const displayText = text.trim() || `${width}x${height}`;
-        
+
         ctx.fillStyle = textColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        
-        // Approximate a good font size based on dimension
+
         const fontSize = Math.max(12, Math.floor(Math.min(width, height) / 5));
         ctx.font = `bold ${fontSize}px sans-serif`;
-
         ctx.fillText(displayText, canvas.width / 2, canvas.height / 2);
     }, [width, height, bgColor, textColor, text]);
 
-    // Redraw whenever inputs change
     useEffect(() => {
         drawPlaceholder();
     }, [drawPlaceholder]);
@@ -61,7 +90,7 @@ export function ImageToolsPage() {
         const dataUrl = canvas.toDataURL(format);
         const a = document.createElement("a");
         a.href = dataUrl;
-        
+
         const ext = format.split("/")[1];
         a.download = `placeholder-${width}x${height}.${ext}`;
         document.body.appendChild(a);
@@ -73,119 +102,137 @@ export function ImageToolsPage() {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // ClipboardItem only supports PNG in most browsers
         canvas.toBlob(async (blob) => {
-            if (blob) {
-                try {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ "image/png": blob })
-                    ]);
-                    // Show small success indication maybe?
-                } catch (err) {
-                    console.error("Failed to copy image to clipboard", err);
-                }
+            if (!blob) return;
+
+            try {
+                await navigator.clipboard.write([
+                    new ClipboardItem({ "image/png": blob }),
+                ]);
+            } catch (err) {
+                console.error("Failed to copy image to clipboard", err);
             }
         }, "image/png");
     };
 
     return (
         <TooltipProvider>
-            <div className="flex flex-col h-full gap-6">
-                <div className="shrink-0">
+            <div className="space-y-6">
+                <div>
                     <h1 className="text-2xl font-bold tracking-tight">Image Tools</h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Generate placeholder images locally using Canvas.
+                        Manipulate, edit and generate images, and more.
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-[300px_1fr] gap-6 flex-1 min-h-0">
-                    {/* Controls */}
-                    <div className="space-y-6 overflow-y-auto p-1">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-lg flex items-center gap-2">
-                                <ImageIcon className="h-5 w-5 text-primary" />
-                                Options
-                            </h3>
+                {/* Tool selector */}
+                <div className="flex flex-wrap gap-2">
+                    {SUB_TOOLS.map((tool) => {
+                        const Icon = tool.icon;
+                        const isActive = tool.id === activeToolId;
 
+                        return (
+                            <Tooltip key={tool.id}>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant={isActive ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => handleToolChange(tool.id)}
+                                        className="shrink-0"
+                                    >
+                                        <Icon className="mr-2 h-4 w-4" />
+                                        {tool.label}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{tool.description}</TooltipContent>
+                            </Tooltip>
+                        );
+                    })}
+                </div>
+
+                {/* Active tool description */}
+                <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <activeTool.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                        <p className="font-medium text-sm">{activeTool.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                            {activeTool.description}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Active tool content */}
+                {activeToolId === "placeholder-generator" && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-4 rounded-lg border p-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="img-width">Width</Label>
-                                    <Input 
-                                        id="img-width" 
-                                        type="number" 
-                                        min={1} 
-                                        max={5000} 
-                                        value={width} 
-                                        onChange={(e) => setWidth(Number(e.target.value))} 
+                                    <Input
+                                        id="img-width"
+                                        type="number"
+                                        min={1}
+                                        value={width}
+                                        onChange={(e) => setWidth(Number(e.target.value) || 1)}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="img-height">Height</Label>
-                                    <Input 
-                                        id="img-height" 
-                                        type="number" 
-                                        min={1} 
-                                        max={5000} 
-                                        value={height} 
-                                        onChange={(e) => setHeight(Number(e.target.value))} 
+                                    <Input
+                                        id="img-height"
+                                        type="number"
+                                        min={1}
+                                        value={height}
+                                        onChange={(e) => setHeight(Number(e.target.value) || 1)}
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="bg-color">Background</Label>
-                                    <div className="flex gap-2">
-                                        <Input 
-                                            id="bg-color" 
-                                            type="color" 
-                                            className="w-12 p-1 cursor-pointer"
-                                            value={bgColor} 
-                                            onChange={(e) => setBgColor(e.target.value)} 
-                                        />
-                                        <Input 
-                                            type="text" 
-                                            value={bgColor} 
-                                            onChange={(e) => setBgColor(e.target.value)} 
-                                            className="uppercase font-mono text-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="text-color">Text Color</Label>
-                                    <div className="flex gap-2">
-                                        <Input 
-                                            id="text-color" 
-                                            type="color" 
-                                            className="w-12 p-1 cursor-pointer"
-                                            value={textColor} 
-                                            onChange={(e) => setTextColor(e.target.value)} 
-                                        />
-                                        <Input 
-                                            type="text" 
-                                            value={textColor} 
-                                            onChange={(e) => setTextColor(e.target.value)} 
-                                            className="uppercase font-mono text-sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
                             <div className="space-y-2">
-                                <Label htmlFor="img-text">Custom Text (Optional)</Label>
-                                <Input 
-                                    id="img-text" 
-                                    placeholder="Leave empty for dimensions"
-                                    value={text} 
-                                    onChange={(e) => setText(e.target.value)} 
+                                <Label htmlFor="img-text">Text</Label>
+                                <Input
+                                    id="img-text"
+                                    value={text}
+                                    onChange={(e) => setText(e.target.value)}
+                                    placeholder="Leave empty to use dimensions"
                                 />
                             </div>
 
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="bg-color">Background Color</Label>
+                                    <Input
+                                        id="bg-color"
+                                        type="color"
+                                        value={bgColor}
+                                        onChange={(e) => setBgColor(e.target.value)}
+                                        className="h-10 p-1"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="text-color">Text Color</Label>
+                                    <Input
+                                        id="text-color"
+                                        type="color"
+                                        value={textColor}
+                                        onChange={(e) => setTextColor(e.target.value)}
+                                        className="h-10 p-1"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
-                                <Label>Download Format</Label>
-                                <Select value={format} onValueChange={(val: any) => setFormat(val)}>
+                                <Label>Format</Label>
+                                <Select
+                                    value={format}
+                                    onValueChange={(value: "image/png" | "image/jpeg" | "image/webp") =>
+                                        setFormat(value)
+                                    }
+                                >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Format" />
+                                        <SelectValue placeholder="Select format" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="image/png">PNG</SelectItem>
@@ -195,43 +242,29 @@ export function ImageToolsPage() {
                                 </Select>
                             </div>
 
-                            <div className="flex gap-2 pt-2">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button className="flex-1" onClick={handleDownload}>
-                                            <Download className="mr-2 h-4 w-4" /> Download
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Save image to disk</TooltipContent>
-                                </Tooltip>
-                                
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="secondary" className="flex-1" onClick={handleCopy}>
-                                            <Copy className="mr-2 h-4 w-4" /> Copy
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Copy PNG to clipboard</TooltipContent>
-                                </Tooltip>
+                            <div className="flex flex-wrap gap-2 pt-2">
+                                <Button onClick={handleDownload}>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download
+                                </Button>
+                                <Button variant="outline" onClick={handleCopy}>
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Copy PNG
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="rounded-lg border p-4">
+                            <Label className="mb-3 block">Preview</Label>
+                            <div className="flex items-center justify-center rounded-lg border bg-muted/20 p-4 overflow-auto">
+                                <canvas
+                                    ref={canvasRef}
+                                    className="max-w-full h-auto rounded border shadow-sm"
+                                />
                             </div>
                         </div>
                     </div>
-
-                    {/* Preview */}
-                    <div className="flex flex-col border rounded-lg overflow-hidden bg-muted/20 min-h-[300px]">
-                        <div className="bg-muted px-4 py-2 border-b text-sm font-medium flex items-center justify-between">
-                            <span>Preview</span>
-                            <span className="text-muted-foreground text-xs font-mono">{width} x {height}</span>
-                        </div>
-                        <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZTVlNWU1Ii8+PHJlY3QgeD0iMTAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iI2Y1ZjVmNSIvPjxyZWN0IHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmNWY1ZjUiLz48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iI2U1ZTVlNSIvPjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMjIyMjIyIi8+PHJlY3QgeD0iMTAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzMzMzMzMyIvPjxyZWN0IHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiMzMzMzMzMiLz48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzIyMjIyMiIvPjwvc3ZnPg==')]">
-                            <canvas 
-                                ref={canvasRef} 
-                                className="max-w-full shadow-md object-contain"
-                                style={{ maxHeight: "100%" }}
-                            />
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
         </TooltipProvider>
     );
