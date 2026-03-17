@@ -143,3 +143,112 @@ export function urlEncode(s: string): string {
 export function urlDecode(s: string): string {
     return decodeURIComponent(s);
 }
+
+// ============================================
+// Text and Lists Tools (New Tools)
+// ============================================
+
+export function reverseList(s: string): string {
+    if (!s) return "";
+    return s.split('\n').reverse().join('\n');
+}
+
+export function randomizeList(s: string): string {
+    if (!s) return "";
+    const lines = s.split('\n');
+    for (let i = lines.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [lines[i], lines[j]] = [lines[j], lines[i]];
+    }
+    return lines.join('\n');
+}
+
+export function sortList(s: string): string {
+    if (!s) return "";
+    return s.split('\n').sort().join('\n');
+}
+
+export function addTextToEachLine(s: string, prefix: string = '', suffix: string = ''): string {
+    if (!s) return "";
+    return s.split('\n').map(line => `${prefix}${line}${suffix}`).join('\n');
+}
+
+export function convertTabsToSpaces(s: string, spacesCount: number = 4): string {
+    const spaces = ' '.repeat(Math.max(0, spacesCount));
+    return s.replace(/\t/g, spaces);
+}
+
+export function convertSpacesToTabs(s: string, spacesCount: number = 4): string {
+    if (spacesCount <= 0) return s;
+    const spaces = ' '.repeat(spacesCount);
+    return s.replace(new RegExp(spaces, 'g'), '\t');
+}
+
+export function removeLineBreaks(s: string): string {
+    return s.replace(/[\r\n]+/g, '');
+}
+
+export function removeEmptyLines(s: string): string {
+    if (!s) return "";
+    return s.split('\n').filter(line => line.trim().length > 0).join('\n');
+}
+
+export function countLines(s: string): number {
+    if (!s) return 0;
+    return s.split('\n').length;
+}
+
+export function filterLines(s: string, search: string = '', matchMode: 'contains' | 'not_contains' = 'contains', caseSensitive: boolean = false): string {
+    if (!s || !search) return s;
+    const query = caseSensitive ? search : search.toLowerCase();
+    
+    return s.split('\n').filter(line => {
+        const target = caseSensitive ? line : line.toLowerCase();
+        const hasMatch = target.includes(query);
+        return matchMode === 'contains' ? hasMatch : !hasMatch;
+    }).join('\n');
+}
+
+export function repeatText(s: string, count: number = 2, separator: string = ''): string {
+    if (count <= 0) return '';
+    return Array(Math.max(0, count)).fill(s).join(separator);
+}
+
+export function findAndReplace(s: string, find: string = '', replace: string = '', useRegex: boolean = false, caseSensitive: boolean = false): string {
+    if (!find) return s;
+    
+    if (useRegex) {
+        try {
+            const flags = caseSensitive ? 'g' : 'gi';
+            const regex = new RegExp(find, flags);
+            return s.replace(regex, replace);
+        } catch (e) {
+            throw new Error(`Invalid regex: ${find}`);
+        }
+    } else {
+        if (caseSensitive) {
+            return s.split(find).join(replace);
+        } else {
+            const escapedFind = find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedFind, 'gi');
+            return s.replace(regex, replace);
+        }
+    }
+}
+
+export function countWords(s: string): number {
+    const trimmed = s.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).length;
+}
+
+export function countLetters(s: string): number {
+    const letters = s.match(/[a-zA-Z^\u00C0-\u017F]/g); // basic support for accented letters
+    return letters ? letters.length : 0;
+}
+
+export function removeDuplicateLines(s: string): string {
+    if (!s) return "";
+    return Array.from(new Set(s.split('\n'))).join('\n');
+}
+

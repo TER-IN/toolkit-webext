@@ -13,6 +13,7 @@ import {
     Type,
     CodeXml,
     Clock,
+    List,
     ArrowLeftRight,
     Settings,
     AlertCircle,
@@ -37,6 +38,7 @@ const NAV_ITEMS = [
     { to: "/string-tools", label: "String Tools", icon: Type },
     { to: "/programming-tools", label: "Programming Tools", icon: CodeXml },
     { to: "/date-and-time", label: "Date & Time", icon: Clock },
+    { to: "/text-and-lists", label: "Text & Lists", icon: List },
     { to: "/converters", label: "Converters", icon: ArrowLeftRight },
 ] as const;
 

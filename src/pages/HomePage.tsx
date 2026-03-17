@@ -44,6 +44,12 @@ const TOOLS = [
         icon: Clock,
     },
     {
+        to: "/text-and-lists",
+        title: "Text & Lists",
+        description: "Filter lines, convert linebreaks, reverse arrays, compare text.",
+        icon: Type,
+    },
+    {
         to: "/converters",
         title: "Converters",
         description: "Encode & decode between text, binary, and Base64 formats.",
