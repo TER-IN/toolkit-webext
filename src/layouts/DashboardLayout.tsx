@@ -4,7 +4,7 @@
 // Persistent sidebar + main content area.
 
 import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
     Home,
     Paintbrush,
@@ -114,21 +114,20 @@ export function DashboardLayout() {
                     {/* Navigation */}
                     <nav className={cn("flex-1 space-y-2 p-3", isCollapsed && "items-center flex flex-col")}>
                         {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
+                            const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
                             const linkContent = (
                                 <NavLink
                                     key={to}
                                     to={to}
                                     end={to === "/"}
                                     tabIndex={0}
-                                    className={({ isActive }) =>
-                                        cn(
-                                            "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                            isCollapsed ? "justify-center px-0" : "px-3 gap-3",
-                                            isActive
-                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                                        )
-                                    }
+                                    className={cn(
+                                        "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                        isCollapsed ? "justify-center px-0" : "px-3 gap-3",
+                                        isActive
+                                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                            : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                                    )}
                                 >
                                     <div className={cn("flex justify-center", isCollapsed ? "" : "gap-3")}>
                                         <Icon className="h-5 w-5 shrink-0" />
@@ -153,19 +152,18 @@ export function DashboardLayout() {
                     {/* Settings Nav Item (at the bottom) */}
                     <div className="border-t border-border p-3">
                         {(() => {
+                            const isSettingsActive = location.pathname.startsWith("/settings");
                             const settingsLink = (
                                 <NavLink
                                     to="/settings"
                                     tabIndex={0}
-                                    className={({ isActive }) =>
-                                        cn(
-                                            "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full relative outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                            isCollapsed ? "justify-center px-0" : "px-3 justify-between",
-                                            isActive
-                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                                        )
-                                    }
+                                    className={cn(
+                                        "flex items-center rounded-lg py-2 text-sm font-medium transition-colors h-10 w-full relative outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                        isCollapsed ? "justify-center px-0" : "px-3 justify-between",
+                                        isSettingsActive
+                                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                            : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                                    )}
                                 >
                                     <div className={cn("flex justify-center", isCollapsed ? "" : "gap-3")}>
                                         <Settings className="h-5 w-5 shrink-0" />

@@ -79,8 +79,8 @@ export function HomePage() {
                 {TOOLS.map((tool) => {
                     const Icon = tool.icon;
                     return (
-                        <Link key={tool.title} to={tool.to} tabIndex={0} className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-                            <Card className="transition-shadow hover:shadow-md cursor-pointer">
+                        <Link key={tool.title} to={tool.to} tabIndex={0} className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background h-full">
+                            <Card className="transition-shadow hover:shadow-md cursor-pointer flex flex-col h-full">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
