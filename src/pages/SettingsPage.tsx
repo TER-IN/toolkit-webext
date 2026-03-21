@@ -22,9 +22,9 @@ export function SettingsPage() {
     const [isImporting, setIsImporting] = useState(false);
     const [importStatus, setImportStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-    const [isKeySet, setIsKeySet] = useState(false);
-    const [isEditingKey, setIsEditingKey] = useState(false);
-    const [newEtherscanApiKey, setNewEtherscanApiKey] = useState("");
+    const [isAlchemyKeySet, setIsAlchemyKeySet] = useState(false);
+    const [isEditingAlchemyKey, setIsEditingAlchemyKey] = useState(false);
+    const [newAlchemyApiKey, setNewAlchemyApiKey] = useState("");
     const [isSavingSettings, setIsSavingSettings] = useState(false);
 
     // Auto-Sync state
@@ -43,20 +43,20 @@ export function SettingsPage() {
             }
 
             // Check whether API key exists, do not load it into UI state
-            const key = await StorageManager.get<string>("etherscan_api_key", "");
-            setIsKeySet(!!key);
+            const key = await StorageManager.get<string>("alchemy_api_key", "");
+            setIsAlchemyKeySet(!!key);
         }
         initSync();
     }, []);
 
-    async function handleSaveEtherscanApiKey() {
-        if (!newEtherscanApiKey.trim()) return;
+    async function handleSaveAlchemyApiKey() {
+        if (!newAlchemyApiKey.trim()) return;
 
         setIsSavingSettings(true);
-        await StorageManager.set("etherscan_api_key", newEtherscanApiKey.trim());
-        setIsKeySet(true);
-        setNewEtherscanApiKey("");
-        setIsEditingKey(false);
+        await StorageManager.set("alchemy_api_key", newAlchemyApiKey.trim());
+        setIsAlchemyKeySet(true);
+        setNewAlchemyApiKey("");
+        setIsEditingAlchemyKey(false);
         setTimeout(() => setIsSavingSettings(false), 500);
     }
 
@@ -223,10 +223,10 @@ export function SettingsPage() {
                             Configure API keys needed for advanced extension features.
                         </p>
                     </div>
-                    {isEditingKey && (
+                    {isEditingAlchemyKey && (
                         <Button
-                            onClick={handleSaveEtherscanApiKey}
-                            disabled={isSavingSettings || !newEtherscanApiKey.trim()}
+                            onClick={handleSaveAlchemyApiKey}
+                            disabled={isSavingSettings || !newAlchemyApiKey.trim()}
                         >
                             {isSavingSettings ? "Saving..." : "Save API Key"}
                         </Button>
@@ -234,32 +234,32 @@ export function SettingsPage() {
                 </div>
 
                 <div className="space-y-3">
-                    <Label htmlFor="etherscan-api-key">Etherscan API Key</Label>
+                    <Label htmlFor="alchemy-api-key">Alchemy API Key</Label>
 
-                    {!isEditingKey ? (
+                    {!isEditingAlchemyKey ? (
                         <div className="flex items-center justify-between gap-4">
                             <div className="text-sm text-muted-foreground">
-                                {isKeySet ? "API key is saved" : "No API key set"}
+                                {isAlchemyKeySet ? "API key is saved" : "No API key set"}
                             </div>
 
                             <div className="flex gap-2">
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => setIsEditingKey(true)}
+                                    onClick={() => setIsEditingAlchemyKey(true)}
                                 >
-                                    {isKeySet ? "Replace" : "Set API Key"}
+                                    {isAlchemyKeySet ? "Replace" : "Set API Key"}
                                 </Button>
 
-                                {isKeySet && (
+                                {isAlchemyKeySet && (
                                     <Button
                                         size="sm"
                                         variant="destructive"
                                         onClick={async () => {
-                                            await StorageManager.set("etherscan_api_key", "");
-                                            setIsKeySet(false);
-                                            setNewEtherscanApiKey("");
-                                            setIsEditingKey(false);
+                                            await StorageManager.set("alchemy_api_key", "");
+                                            setIsAlchemyKeySet(false);
+                                            setNewAlchemyApiKey("");
+                                            setIsEditingAlchemyKey(false);
                                         }}
                                     >
                                         Remove
@@ -270,18 +270,18 @@ export function SettingsPage() {
                     ) : (
                         <div className="space-y-2">
                             <Input
-                                id="etherscan-api-key"
+                                id="alchemy-api-key"
                                 type="password"
-                                placeholder="Enter Etherscan API Key"
-                                value={newEtherscanApiKey}
-                                onChange={(e) => setNewEtherscanApiKey(e.target.value)}
+                                placeholder="Enter Alchemy API Key"
+                                value={newAlchemyApiKey}
+                                onChange={(e) => setNewAlchemyApiKey(e.target.value)}
                             />
 
                             <div className="flex gap-2">
                                 <Button
                                     size="sm"
-                                    onClick={handleSaveEtherscanApiKey}
-                                    disabled={isSavingSettings || !newEtherscanApiKey.trim()}
+                                    onClick={handleSaveAlchemyApiKey}
+                                    disabled={isSavingSettings || !newAlchemyApiKey.trim()}
                                 >
                                     {isSavingSettings ? "Saving..." : "Save"}
                                 </Button>
@@ -290,8 +290,8 @@ export function SettingsPage() {
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => {
-                                        setNewEtherscanApiKey("");
-                                        setIsEditingKey(false);
+                                        setNewAlchemyApiKey("");
+                                        setIsEditingAlchemyKey(false);
                                     }}
                                 >
                                     Cancel
@@ -301,7 +301,7 @@ export function SettingsPage() {
                     )}
 
                     <p className="text-xs text-muted-foreground">
-                        Used by finance tools to retrieve transactions' data.
+                        Used by finance tools to auto-fill Ethereum and Avalanche C-Chain transactions via Alchemy.
                     </p>
                 </div>
             </section>
