@@ -22,7 +22,12 @@ import {
     AlignCenter,
     AlignRight,
     Plus,
-    Minus
+    Minus,
+    Key,
+    Shield,
+    PenLine,
+    AlertTriangle,
+    Loader2,
 } from "lucide-react";
 
 import ReactMarkdown from "react-markdown";
@@ -31,10 +36,32 @@ import js_beautify from "js-beautify";
 import { format as sqlFormatter } from "sql-formatter";
 
 import { cn } from "@/lib/utils";
+import {
+    parseAndValidate,
+    getJwtAlgorithm,
+    getCommonClaims,
+    getJwtStatus,
+    prettyPrintJson,
+} from "@/lib/jwt";
+import {
+    verifyJwtSignature,
+    generateJwt,
+    decodeSecretInput,
+    SUPPORTED_SIGN_ALGS,
+    isHmacAlg,
+    isRsaAlg,
+    type Alg,
+    type SecretEncoding,
+    type VerifyResult,
+} from "@/lib/jwt-crypto";
+import { getJwtExamplePreset, JWT_EXAMPLE_PRESETS, type JwtExamplePreset } from "@/lib/jwt-examples";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
     Tooltip,
     TooltipContent,
@@ -102,6 +129,12 @@ const SUB_TOOLS: SubTool[] = [
         description: "Format SQL queries beautifully.",
         icon: Database,
     },
+    {
+        id: "jwt-debugger",
+        label: "JWT Debugger",
+        description: "Decode, verify, and generate JSON Web Tokens.",
+        icon: Key,
+    },
 ];
 
 // ---- Accepted file types for upload ----
@@ -122,6 +155,29 @@ export function ProgrammingToolsPage() {
     const [tableCols, setTableCols] = useState(3);
     const [tableData, setTableData] = useState<string[][]>(Array(3).fill(null).map(() => Array(3).fill("")));
     const [tableAlign, setTableAlign] = useState<("left" | "center" | "right")[]>(Array(3).fill("left"));
+
+    // JWT Decoder specific state
+    const [jwtInput, setJwtInput] = useState("");
+    const [jwtCopied, setJwtCopied] = useState<"header" | "payload" | "signature" | null>(null);
+
+    // JWT Verify (inline, lives in Decoder tab)
+    const [jwtSecret, setJwtSecret] = useState("");
+    const [jwtSecretEncoding, setJwtSecretEncoding] = useState<SecretEncoding>("utf8");
+    const [jwtPublicKey, setJwtPublicKey] = useState("");
+    const [jwtVerifyResult, setJwtVerifyResult] = useState<VerifyResult | null>(null);
+    const [jwtVerifyLoading, setJwtVerifyLoading] = useState(false);
+
+    // JWT Encode specific state
+    const [jwtGenAlg, setJwtGenAlg] = useState<Alg>("HS256");
+    const [jwtGenSecret, setJwtGenSecret] = useState("");
+    const [jwtGenSecretEncoding, setJwtGenSecretEncoding] = useState<SecretEncoding>("utf8");
+    const [jwtGenPrivateKey, setJwtGenPrivateKey] = useState("");
+    const [jwtGenHeader, setJwtGenHeader] = useState('{\n  "alg": "HS256",\n  "typ": "JWT"\n}');
+    const [jwtGenPayload, setJwtGenPayload] = useState('{\n  "sub": "1234567890",\n  "name": "John Doe",\n  "admin": true,\n  "iat": 1516239022\n}');
+    const [jwtGenOutput, setJwtGenOutput] = useState("");
+    const [jwtGenError, setJwtGenError] = useState<string | null>(null);
+    const [jwtGenLoading, setJwtGenLoading] = useState(false);
+    const [jwtExampleLoading, setJwtExampleLoading] = useState(false);
 
     const activeTool = SUB_TOOLS.find((t) => t.id === activeToolId)!;
 
@@ -563,6 +619,623 @@ export function ProgrammingToolsPage() {
         );
     };
 
+    // ---- JWT sub-tab state ----
+    const [jwtActiveTab, setJwtActiveTab] = useState("decoder");
+
+    const jwtParsed = parseAndValidate(jwtInput);
+    const jwtDecoded = jwtParsed.decoded;
+    const jwtAlgorithm = jwtDecoded ? getJwtAlgorithm(jwtDecoded) : null;
+    const jwtClaims = jwtDecoded ? getCommonClaims(jwtDecoded) : [];
+    const jwtStatus = jwtDecoded
+        ? getJwtStatus(jwtDecoded)
+        : jwtParsed.error
+            ? { kind: "malformed" as const, reason: jwtParsed.error }
+            : null;
+    const jwtVerifyUsesSecret = jwtAlgorithm ? isHmacAlg(jwtAlgorithm) : false;
+    const jwtVerifyUsesRsa = jwtAlgorithm ? isRsaAlg(jwtAlgorithm) : false;
+    const jwtCanEncode = isHmacAlg(jwtGenAlg) ? Boolean(jwtGenSecret) : Boolean(jwtGenPrivateKey.trim());
+
+    const renderJwtJsonPanel = (label: string, value: string, part: "header" | "payload") => (
+        <div className="rounded-xl border bg-card/70">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+                <Label className="text-sm font-medium">{label}</Label>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={async () => {
+                                await navigator.clipboard.writeText(value);
+                                setJwtCopied(part);
+                                setTimeout(() => setJwtCopied(null), 2000);
+                            }}
+                        >
+                            {jwtCopied === part ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy {label.toLowerCase()}</TooltipContent>
+                </Tooltip>
+            </div>
+            <pre className="overflow-auto p-4 text-xs font-mono text-[#f8f8f2] bg-[#272822] rounded-b-xl">
+                <code dangerouslySetInnerHTML={{ __html: Prism.highlight(value, Prism.languages.json, "json") }} />
+            </pre>
+        </div>
+    );
+
+    const renderJwtVerifyResult = () => {
+        if (!jwtVerifyResult) return null;
+
+        const resultStyles: Record<VerifyResult["kind"], string> = {
+            "signature-verified": "border-green-500/20 bg-green-500/10 text-green-600 dark:text-green-400",
+            "invalid-signature": "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400",
+            "unsupported-algorithm": "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+            "invalid-key-format": "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400",
+            "verification-error": "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400",
+        };
+
+        const titleMap: Record<VerifyResult["kind"], string> = {
+            "signature-verified": "Signature verified",
+            "invalid-signature": "Invalid signature",
+            "unsupported-algorithm": "Unsupported algorithm",
+            "invalid-key-format": "Invalid key format",
+            "verification-error": "Verification error",
+        };
+
+        const detail =
+            jwtVerifyResult.kind === "unsupported-algorithm"
+                ? jwtVerifyResult.alg
+                : jwtVerifyResult.reason;
+
+        return (
+            <div className={cn("flex items-start gap-2 rounded-lg border px-3 py-2 text-sm", resultStyles[jwtVerifyResult.kind])}>
+                {jwtVerifyResult.kind === "signature-verified" ? (
+                    <Check className="mt-0.5 h-4 w-4 shrink-0" />
+                ) : (
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                )}
+                <div>
+                    <div className="font-medium">{titleMap[jwtVerifyResult.kind]}</div>
+                    {detail ? <div className="text-xs opacity-90">{detail}</div> : null}
+                </div>
+            </div>
+        );
+    };
+
+    const applyJwtExampleToEncoder = (preset: JwtExamplePreset) => {
+        setJwtGenAlg(preset.alg);
+        setJwtGenHeader(preset.header);
+        setJwtGenPayload(preset.payload);
+        setJwtGenSecret(preset.secret ?? "");
+        setJwtGenSecretEncoding(preset.secretEncoding ?? "utf8");
+        setJwtGenPrivateKey(preset.privateKeyPem ?? "");
+        setJwtGenError(null);
+    };
+
+    const loadJwtExampleIntoDecoder = async (id: JwtExamplePreset["id"]) => {
+        const preset = getJwtExamplePreset(id);
+        setJwtExampleLoading(true);
+
+        try {
+            const result = await generateJwt({
+                headerJson: preset.header,
+                payloadJson: preset.payload,
+                alg: preset.alg,
+                secretBytes: preset.secret ? decodeSecretInput(preset.secret, preset.secretEncoding ?? "utf8") ?? undefined : undefined,
+                privateKeyPem: preset.privateKeyPem,
+            });
+
+            if (result.error || !result.token) {
+                setJwtVerifyResult({ kind: "verification-error", reason: result.error ?? "Failed to generate example token" });
+                return;
+            }
+
+            setJwtInput(result.token);
+            setJwtSecret(preset.secret ?? "");
+            setJwtSecretEncoding(preset.secretEncoding ?? "utf8");
+            setJwtPublicKey(preset.publicKeyPem ?? "");
+            setJwtVerifyResult(null);
+        } finally {
+            setJwtExampleLoading(false);
+        }
+    };
+
+    const handleVerifyInline = async () => {
+        if (!jwtDecoded || !jwtAlgorithm) {
+            return;
+        }
+
+        setJwtVerifyLoading(true);
+        setJwtVerifyResult(null);
+
+        try {
+            const result = await verifyJwtSignature({
+                alg: jwtAlgorithm,
+                headerBase64Url: jwtDecoded.raw.header,
+                payloadBase64Url: jwtDecoded.raw.payload,
+                signatureBase64Url: jwtDecoded.raw.signature,
+                secretBytes: jwtVerifyUsesSecret ? decodeSecretInput(jwtSecret, jwtSecretEncoding) ?? undefined : undefined,
+                publicKeyPem: jwtVerifyUsesRsa ? jwtPublicKey : undefined,
+            });
+
+            if (jwtVerifyUsesSecret && !jwtSecret.trim()) {
+                setJwtVerifyResult({ kind: "invalid-key-format", reason: "Secret key is required for HMAC verification" });
+            } else {
+                setJwtVerifyResult(result);
+            }
+        } catch (error) {
+            setJwtVerifyResult({
+                kind: "verification-error",
+                reason: error instanceof Error ? error.message : String(error),
+            });
+        } finally {
+            setJwtVerifyLoading(false);
+        }
+    };
+
+    const handleEncode = async () => {
+        setJwtGenLoading(true);
+        setJwtGenError(null);
+        setJwtGenOutput("");
+
+        const secretBytes = isHmacAlg(jwtGenAlg) ? decodeSecretInput(jwtGenSecret, jwtGenSecretEncoding) : null;
+        if (isHmacAlg(jwtGenAlg) && !secretBytes) {
+            setJwtGenError(`Failed to decode secret using ${jwtGenSecretEncoding} encoding.`);
+            setJwtGenLoading(false);
+            return;
+        }
+
+        const result = await generateJwt({
+            headerJson: jwtGenHeader,
+            payloadJson: jwtGenPayload,
+            alg: jwtGenAlg,
+            secretBytes: secretBytes ?? undefined,
+            privateKeyPem: isRsaAlg(jwtGenAlg) ? jwtGenPrivateKey : undefined,
+        });
+
+        if (result.error || !result.token) {
+            setJwtGenError(result.error ?? "Unable to encode JWT.");
+        } else {
+            setJwtGenOutput(result.token);
+        }
+
+        setJwtGenLoading(false);
+    };
+
+    const injectClaim = (claim: string, value: string | number) => {
+        try {
+            const parsed = JSON.parse(jwtGenPayload) as Record<string, unknown>;
+            parsed[claim] = value;
+            setJwtGenPayload(JSON.stringify(parsed, null, 2));
+            setJwtGenError(null);
+        } catch {
+            setJwtGenError("Payload must be valid JSON before adding common claims.");
+        }
+    };
+
+    const renderJwtStatusBadge = () => {
+        if (!jwtStatus) return null;
+
+        if (jwtStatus.kind === "valid-format") {
+            return <Badge className="border-green-500/20 bg-green-500/10 text-green-600 dark:text-green-400">Valid format</Badge>;
+        }
+
+        if (jwtStatus.kind === "expired") {
+            return <Badge className="border-orange-500/20 bg-orange-500/10 text-orange-600 dark:text-orange-400">Expired</Badge>;
+        }
+
+        if (jwtStatus.kind === "not-yet-active") {
+            return <Badge className="border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400">Not yet active</Badge>;
+        }
+
+        return <Badge className="border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400">Malformed</Badge>;
+    };
+
+    const renderJwtDecoderTab = () => (
+        <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h3 className="text-base font-semibold">JWT Decoder</h3>
+                    <p className="text-sm text-muted-foreground">Decode and verify JWTs.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Select onValueChange={(value: JwtExamplePreset["id"]) => void loadJwtExampleIntoDecoder(value)}>
+                        <SelectTrigger className="w-[190px]">
+                            <SelectValue placeholder="Load example" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {JWT_EXAMPLE_PRESETS.map((preset) => (
+                                <SelectItem key={preset.id} value={preset.id}>{preset.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" onClick={() => { setJwtInput(""); setJwtVerifyResult(null); }} disabled={!jwtInput}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Clear
+                    </Button>
+                </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+                <div className="min-w-0 space-y-4">
+                    <div className="min-w-0 rounded-xl border bg-card/70">
+                        <div className="flex items-center justify-between border-b px-4 py-3">
+                            <Label htmlFor="jwt-input" className="text-sm font-medium">Encoded JWT</Label>
+                            {jwtExampleLoading ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : null}
+                        </div>
+                        <Textarea
+                            id="jwt-input"
+                            value={jwtInput}
+                            onChange={(event) => {
+                                setJwtInput(event.target.value);
+                                setJwtVerifyResult(null);
+                            }}
+                            placeholder="Paste an encoded JWT"
+                            className="min-h-[240px] min-w-0 break-all rounded-none border-0 font-mono text-sm shadow-none focus-visible:ring-0"
+                            spellCheck={false}
+                        />
+                    </div>
+
+                    <div className="min-w-0 rounded-xl border bg-card/70 p-4">
+                        <div className="mb-3 flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-muted-foreground" />
+                            <Label className="text-sm font-medium">JWT Signature Verification</Label>
+                        </div>
+
+                        {jwtVerifyUsesSecret ? (
+                            <div className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
+                                <Input
+                                    type="password"
+                                    value={jwtSecret}
+                                    onChange={(event) => {
+                                        setJwtSecret(event.target.value);
+                                        setJwtVerifyResult(null);
+                                    }}
+                                    placeholder="Secret"
+                                    className="font-mono text-sm"
+                                />
+                                <Select value={jwtSecretEncoding} onValueChange={(value: SecretEncoding) => setJwtSecretEncoding(value)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="utf8">UTF-8</SelectItem>
+                                        <SelectItem value="base64">Base64</SelectItem>
+                                        <SelectItem value="base64url">Base64URL</SelectItem>
+                                        <SelectItem value="hex">Hex</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Button onClick={handleVerifyInline} disabled={jwtVerifyLoading || !jwtDecoded}>
+                                    {jwtVerifyLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
+                                    Verify
+                                </Button>
+                            </div>
+                        ) : jwtVerifyUsesRsa ? (
+                            <div className="space-y-3">
+                                <Textarea
+                                    value={jwtPublicKey}
+                                    onChange={(event) => {
+                                        setJwtPublicKey(event.target.value);
+                                        setJwtVerifyResult(null);
+                                    }}
+                                    placeholder="-----BEGIN PUBLIC KEY-----"
+                                    className="min-h-[140px] min-w-0 break-all font-mono text-xs"
+                                    spellCheck={false}
+                                />
+                                <Button onClick={handleVerifyInline} disabled={jwtVerifyLoading || !jwtDecoded}>
+                                    {jwtVerifyLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
+                                    Verify
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-700 dark:text-yellow-400">
+                                Unsupported algorithm for verification.
+                            </div>
+                        )}
+
+                        <div className="mt-3">{renderJwtVerifyResult()}</div>
+                    </div>
+                </div>
+
+                <div className="min-w-0 space-y-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {jwtAlgorithm ? <Badge variant="outline" className="font-mono">{jwtAlgorithm}</Badge> : null}
+                        {renderJwtStatusBadge()}
+                    </div>
+
+                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+                        Decoded claims are not trusted until the JWT signature is verified.
+                    </div>
+
+                    {jwtParsed.error ? (
+                        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+                            {jwtParsed.error}
+                        </div>
+                    ) : null}
+
+                    {jwtDecoded ? (
+                        <>
+                            {renderJwtJsonPanel("Decoded Header", prettyPrintJson(jwtDecoded.header), "header")}
+                            {renderJwtJsonPanel("Decoded Payload", prettyPrintJson(jwtDecoded.payload), "payload")}
+
+                            <div className="min-w-0 rounded-xl border bg-card/70">
+                                <div className="flex items-center justify-between border-b px-4 py-3">
+                                    <Label className="text-sm font-medium">JWT Signature</Label>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7"
+                                                onClick={async () => {
+                                                    await navigator.clipboard.writeText(jwtDecoded.signature);
+                                                    setJwtCopied("signature");
+                                                    setTimeout(() => setJwtCopied(null), 2000);
+                                                }}
+                                            >
+                                                {jwtCopied === "signature" ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Copy signature</TooltipContent>
+                                    </Tooltip>
+                                </div>
+                                <div className="px-4 py-3">
+                                    <code className="text-xs font-mono break-all text-muted-foreground">{jwtDecoded.signature}</code>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border bg-card/70 p-4">
+                                <Label className="text-sm font-medium">Common Claims</Label>
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                    {jwtClaims.length > 0 ? jwtClaims.map((claim) => (
+                                        <div key={claim.key} className="rounded-lg border bg-background/70 px-3 py-2">
+                                            <div className="text-xs font-medium text-muted-foreground">{claim.label}</div>
+                                            <div className="mt-1 break-all font-mono text-xs">{claim.value}</div>
+                                        </div>
+                                    )) : (
+                                        <div className="text-sm text-muted-foreground">No common registered claims found.</div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center">
+                            <Key className="mb-3 h-10 w-10 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Paste an encoded JWT to inspect its header, payload, and signature.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderJwtEncoderTab = () => {
+        const nowSeconds = Math.floor(Date.now() / 1000);
+
+        return (
+            <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h3 className="text-base font-semibold">JWT Encoder</h3>
+                        <p className="text-sm text-muted-foreground">Compose header and payload JSON, then sign with HMAC or RSA.</p>
+                    </div>
+                    <Select onValueChange={(value: JwtExamplePreset["id"]) => applyJwtExampleToEncoder(getJwtExamplePreset(value))}>
+                        <SelectTrigger className="w-[210px]">
+                            <SelectValue placeholder="Generate example" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {JWT_EXAMPLE_PRESETS.map((preset) => (
+                                <SelectItem key={preset.id} value={preset.id}>{preset.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
+                    <div className="space-y-4">
+                        <div className="grid gap-4 lg:grid-cols-2">
+                            <div className="min-w-0 rounded-xl border bg-card/70">
+                                <div className="flex items-center justify-between border-b px-4 py-3">
+                                    <Label htmlFor="jwt-enc-header" className="text-sm font-medium">Header</Label>
+                                    <span className="text-xs text-muted-foreground">`alg` is forced to match the selected algorithm</span>
+                                </div>
+                                <Textarea
+                                    id="jwt-enc-header"
+                                    value={jwtGenHeader}
+                                    onChange={(event) => {
+                                        setJwtGenHeader(event.target.value);
+                                        setJwtGenError(null);
+                                    }}
+                                    className="min-h-[220px] rounded-none border-0 font-mono text-xs shadow-none focus-visible:ring-0"
+                                    spellCheck={false}
+                                />
+                            </div>
+
+                            <div className="rounded-xl border bg-card/70">
+                                <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+                                    <Label htmlFor="jwt-enc-payload" className="text-sm font-medium">Payload</Label>
+                                    <div className="flex flex-wrap gap-1">
+                                        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => injectClaim("iss", "")} type="button">iss</Button>
+                                        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => injectClaim("sub", "")} type="button">sub</Button>
+                                        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => injectClaim("aud", "")} type="button">aud</Button>
+                                        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => injectClaim("exp", nowSeconds + 3600)} type="button">exp</Button>
+                                        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => injectClaim("iat", nowSeconds)} type="button">iat</Button>
+                                        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => injectClaim("nbf", nowSeconds)} type="button">nbf</Button>
+                                        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => injectClaim("jti", crypto.randomUUID?.() ?? Math.random().toString(36).slice(2))} type="button">jti</Button>
+                                    </div>
+                                </div>
+                                <Textarea
+                                    id="jwt-enc-payload"
+                                    value={jwtGenPayload}
+                                    onChange={(event) => {
+                                        setJwtGenPayload(event.target.value);
+                                        setJwtGenError(null);
+                                    }}
+                                    className="min-h-[220px] rounded-none border-0 font-mono text-xs shadow-none focus-visible:ring-0"
+                                    spellCheck={false}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border bg-card/70">
+                            <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+                                <Label className="text-sm font-medium">Sign JWT</Label>
+                                <div className="flex items-center gap-3">
+                                    <div className="min-w-[160px] space-y-2">
+                                        <Label htmlFor="jwt-enc-alg">Algorithm</Label>
+                                        <Select value={jwtGenAlg} onValueChange={(value: Alg) => setJwtGenAlg(value)}>
+                                            <SelectTrigger id="jwt-enc-alg">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {SUPPORTED_SIGN_ALGS.map((alg) => (
+                                                    <SelectItem key={alg} value={alg}>{alg}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    {isRsaAlg(jwtGenAlg) ? (
+                                        <div className="min-w-[140px] space-y-2">
+                                            <Label>Private Key Format</Label>
+                                            <Input value="PEM" readOnly className="font-mono text-sm" />
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </div>
+
+                            <div className="p-4">
+                                {isHmacAlg(jwtGenAlg) ? (
+                                    <div className="grid gap-4 lg:grid-cols-[1fr_180px]">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="jwt-enc-secret">Sign JWT: Secret</Label>
+                                            <Input
+                                                id="jwt-enc-secret"
+                                                type="password"
+                                                value={jwtGenSecret}
+                                                onChange={(event) => {
+                                                    setJwtGenSecret(event.target.value);
+                                                    setJwtGenError(null);
+                                                }}
+                                                placeholder="your-secret"
+                                                className="font-mono text-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="jwt-enc-secret-encoding">Secret Encoding</Label>
+                                            <Select value={jwtGenSecretEncoding} onValueChange={(value: SecretEncoding) => setJwtGenSecretEncoding(value)}>
+                                                <SelectTrigger id="jwt-enc-secret-encoding">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="utf8">UTF-8</SelectItem>
+                                                    <SelectItem value="base64">Base64</SelectItem>
+                                                    <SelectItem value="base64url">Base64URL</SelectItem>
+                                                    <SelectItem value="hex">Hex</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="jwt-enc-private-key">Sign JWT: Private Key</Label>
+                                        <Textarea
+                                            id="jwt-enc-private-key"
+                                            value={jwtGenPrivateKey}
+                                            onChange={(event) => {
+                                                setJwtGenPrivateKey(event.target.value);
+                                                setJwtGenError(null);
+                                            }}
+                                            placeholder="-----BEGIN PRIVATE KEY-----"
+                                            className="min-h-[180px] font-mono text-xs"
+                                            spellCheck={false}
+                                        />
+                                        <div className="text-xs text-muted-foreground">RSA examples use demo keys embedded in the extension.</div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {jwtGenError ? (
+                            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+                                {jwtGenError}
+                            </div>
+                        ) : null}
+
+                        <div className="flex flex-wrap gap-2">
+                            <Button onClick={handleEncode} disabled={jwtGenLoading || !jwtCanEncode}>
+                                {jwtGenLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PenLine className="mr-2 h-4 w-4" />}
+                                Encode
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="rounded-xl border bg-card/70">
+                            <div className="flex items-center justify-between border-b px-4 py-3">
+                                <Label className="text-sm font-medium">JWT Signature / Encoded JWT</Label>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => {
+                                            if (jwtGenOutput) {
+                                                await navigator.clipboard.writeText(jwtGenOutput);
+                                            }
+                                        }}
+                                        disabled={!jwtGenOutput}
+                                    >
+                                        <Copy className="mr-2 h-4 w-4" />
+                                        Copy
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            if (jwtGenOutput) {
+                                                setJwtInput(jwtGenOutput);
+                                                setJwtActiveTab("decoder");
+                                            }
+                                        }}
+                                        disabled={!jwtGenOutput}
+                                    >
+                                        Load into Decoder
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="min-h-[420px] bg-[#272822] p-4">
+                                {jwtGenOutput ? (
+                                    <code className="break-all font-mono text-xs text-[#f8f8f2]">{jwtGenOutput}</code>
+                                ) : (
+                                    <div className="flex h-full items-center justify-center text-center text-sm text-[#f8f8f2]/65">
+                                        Encoded JWT output appears here after signing.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderJwtTool = () => (
+        <Tabs value={jwtActiveTab} onValueChange={setJwtActiveTab} orientation="horizontal" className="space-y-4">
+            <TabsList variant="line" className="border-b p-0">
+                <TabsTrigger value="decoder" className="rounded-none px-4 text-sm">
+                    <Key className="h-4 w-4" />
+                    JWT Decoder
+                </TabsTrigger>
+                <TabsTrigger value="encoder" className="rounded-none px-4 text-sm">
+                    <PenLine className="h-4 w-4" />
+                    JWT Encoder
+                </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="decoder">{renderJwtDecoderTab()}</TabsContent>
+            <TabsContent value="encoder">{renderJwtEncoderTab()}</TabsContent>
+        </Tabs>
+    );
+
     return (
         <TooltipProvider>
             <div className="space-y-6">
@@ -618,8 +1291,8 @@ export function ProgrammingToolsPage() {
                     })()}
                 </div>
 
-                {/* Shared Input area (Used by most tools) */}
-                {activeToolId !== "markdown-table-generator" && (
+                {/* Shared Input area (Used by most tools, but not JWT decoder) */}
+                {activeToolId !== "markdown-table-generator" && activeToolId !== "jwt-debugger" && (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <Label htmlFor="code-input">Input Code</Label>
@@ -699,6 +1372,7 @@ export function ProgrammingToolsPage() {
                 {activeToolId === "markdown-table-generator" && renderMarkdownTableGenerator()}
                 {activeToolId === "html-formatter" && renderHtmlFormatter()}
                 {activeToolId === "sql-formatter" && renderSqlFormatter()}
+                {activeToolId === "jwt-debugger" && renderJwtTool()}
 
             </div>
         </TooltipProvider>

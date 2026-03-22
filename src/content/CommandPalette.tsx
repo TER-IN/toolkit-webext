@@ -93,6 +93,17 @@ export function CommandPalette() {
             },
         },
         {
+            id: "open-jwt-tool",
+            label: "Open JWT Tool",
+            description: "Decode and encode JWTs",
+            icon: "🔑",
+            action: async () => {
+                const dashboardUrl = browser.runtime.getURL("index.html#/programming-tools");
+                window.open(dashboardUrl, "_blank");
+                setIsOpen(false);
+            },
+        },
+        {
             id: "toggle-dark-mode",
             label: "Toggle Dark Mode",
             description: darkModeEnabled
