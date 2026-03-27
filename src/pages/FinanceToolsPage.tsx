@@ -16,6 +16,7 @@ import {
     CheckCircle2,
     Loader2,
     Search,
+    Dice5,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,6 +36,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, L
 import { useFinanceStore, type PortfolioAction, type SupportedImportChain, type CryptoTransaction } from "@/stores/useFinanceStore";
 import { prefetchTransaction } from "@/lib/tx-import";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { MonteCarloSimulator } from "@/pages/monte-carlo/MonteCarloSimulator";
 
 const CHART_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#14b8a6"];
 
@@ -73,6 +75,13 @@ const SUB_TOOLS: SubTool[] = [
         description:
             "Crypto portfolio tracking & analysis",
         icon: Wallet,
+    },
+    {
+        id: "monte-carlo-simulator",
+        label: "Monte Carlo Simulator",
+        description:
+            "Simulate thousands of possible trading equity paths",
+        icon: Dice5,
     },
 ];
 
@@ -1375,6 +1384,10 @@ export function FinanceToolsPage() {
                             </CardContent>
                         </Card>
                     </div>
+                )}
+
+                {activeToolId === "monte-carlo-simulator" && (
+                    <MonteCarloSimulator />
                 )}
 
                 {/* Delete Confirmation Dialog */}
