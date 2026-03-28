@@ -104,6 +104,17 @@ export function CommandPalette() {
             },
         },
         {
+            id: "open-lorem-ipsum",
+            label: "Open Lorem Ipsum Generator",
+            description: "Generate placeholder text",
+            icon: "📝",
+            action: async () => {
+                const dashboardUrl = browser.runtime.getURL("index.html#/text-and-lists");
+                window.open(dashboardUrl, "_blank");
+                setIsOpen(false);
+            },
+        },
+        {
             id: "toggle-dark-mode",
             label: "Toggle Dark Mode",
             description: darkModeEnabled
